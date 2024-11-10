@@ -20,6 +20,7 @@ require_once './middlewares/ValidarCampos.php';
 // require_once './middlewares/ValidarPerfil.php';
 require_once './middlewares/MesaNoUsada.php';
 require_once './middlewares/EstadoValido.php';
+require_once './middlewares/VerificarJWT.php';
 
 require_once './controllers/UsuarioController.php';
 require_once './controllers/MesaController.php';
@@ -51,7 +52,7 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
   ->add(new ValidarCampos(array("nombre", "tipo", "clave")));
 
   $group->delete('/{id}', \UsuarioController::class . ':BorrarUno');
-});
+})->add(new VerificarJWT());
 
 
 
@@ -68,7 +69,7 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
 
   $group->delete('/{codigo_mesa}', [MesaController::class, 'BorrarUno'])
   ->add(new MesaNoUsada());
-});
+})->add(new VerificarJWT());
 
 
 
@@ -82,7 +83,7 @@ $app->group('/productos', function (RouteCollectorProxy $group) {
   ->add(new ValidarCampos(array("nombre","precio","sector","cantidad")));
 
   $group->delete('/{id}', [ProductoController::class, 'BorrarUno']);
-});
+})->add(new VerificarJWT());
 
 
 
@@ -98,13 +99,16 @@ $app->group('/ordenes', function (RouteCollectorProxy $group) {
   ->add(new ValidarCampos(array("codigo_mesa","nombre_cliente", "productos")));
 
   $group->delete('/{codigo_pedido}', [OrdenController::class, 'BorrarUno']);
-});
+})->add(new VerificarJWT());
 
 $app->get('[/]', function (Request $request, Response $response) {    
   $payload = json_encode(array("mensaje" => "hola"));
   
   $response->getBody()->write($payload);
   return $response->withHeader('Content-Type', 'application/json');
-});
+})->add(new VerificarJWT());
+
+$app->post('/registro', \UsuarioController::class . ':RegistrarUsuario');
+$app->post('/login', \UsuarioController::class . ':Login');
 
 $app->run();

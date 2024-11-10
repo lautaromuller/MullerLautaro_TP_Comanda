@@ -63,4 +63,23 @@ class Usuario
         $consulta->bindValue(':fechaBaja', date_format($fecha, 'Y-m-d'));
         $consulta->execute();
     }
+
+    public static function autenticar($nombre, $clave) {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT id, id_usuario, nombre, tipo, clave, fecha_baja FROM usuarios WHERE nombre = :nombre");
+        $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+        $consulta->execute();
+
+        $usuario = $consulta->fetch(PDO::FETCH_OBJ);
+
+        if ($usuario && password_verify($clave, $usuario->clave)) {
+            return [
+                "id_usuario" => $usuario->id,
+                "nombre" => $usuario->nombre,
+                "tipo" => $usuario->tipo
+            ];
+        }
+
+        return null;
+    }
 }
