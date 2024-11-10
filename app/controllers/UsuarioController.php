@@ -26,9 +26,8 @@ class UsuarioController extends Usuario implements IApiUsable
 
   public function TraerUno($request, $response, $args)
   {
-    $nombre = $args['nombre'];
-    $tipo = $args['tipo'];
-    $usuario = Usuario::obtenerUsuario($nombre, $tipo);
+    $id_usuario = $args['id_usuario'];
+    $usuario = Usuario::obtenerUsuario($id_usuario);
     $payload = json_encode($usuario);
 
     $response->getBody()->write($payload);

@@ -7,4 +7,4 @@ class Logger
         $retorno = $next($request, $response);
         return $retorno;
     }
-}
+};

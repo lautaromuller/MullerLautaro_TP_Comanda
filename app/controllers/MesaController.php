@@ -8,12 +8,10 @@ class MesaController extends Mesa implements IApiUsable
     {
         $parametros = $request->getParsedBody();
 
-        $codigo = $parametros['codigo'];
-        $estado = $parametros['estado'];
+        $codigo = $parametros['codigo_mesa'];
 
         $mesa = new Mesa();
-        $mesa->codigo = $codigo;
-        $mesa->estado = $estado;
+        $mesa->codigo_mesa = $codigo;
         $mesa->crearMesa();
 
         $payload = json_encode(array("mensaje" => "Mesa creada con éxito"));
@@ -33,7 +31,7 @@ class MesaController extends Mesa implements IApiUsable
 
     public function TraerUno($request, $response, $args)
     {
-        $codigo = $args['codigo'];
+        $codigo = $args['codigo_mesa'];
         $mesa = Mesa::obtenerMesa($codigo);
         $payload = json_encode($mesa);
 
@@ -45,7 +43,7 @@ class MesaController extends Mesa implements IApiUsable
     {
         $parametros = $request->getParsedBody();
 
-        $codigo = $args['codigo'];
+        $codigo = $args['codigo_mesa'];
         $estado = $parametros['estado'];
 
         Mesa::modificarMesa($codigo, $estado);
@@ -58,7 +56,7 @@ class MesaController extends Mesa implements IApiUsable
 
     public function BorrarUno($request, $response, $args)
     {
-        $codigo = $args['codigo'];
+        $codigo = $args['codigo_mesa'];
         Mesa::borrarMesa($codigo);
 
         $payload = json_encode(array("mensaje" => "Mesa borrada con éxito"));

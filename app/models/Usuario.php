@@ -11,8 +11,10 @@ class Usuario
     public function crearUsuario()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (nombre, tipo, clave) VALUES (:nombre, :tipo, :clave)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (id_usuario, nombre, tipo, clave) VALUES (:id_usuario, :nombre, :tipo, :clave)");
+        $id_usuario = rand(0,1000);
         $claveHash = password_hash($this->clave, PASSWORD_DEFAULT);
+        $consulta->bindValue(':id_usuario', $id_usuario, PDO::PARAM_INT);
         $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
         $consulta->bindValue(':tipo', $this->tipo, PDO::PARAM_STR);
         $consulta->bindValue(':clave', $claveHash);
@@ -30,12 +32,11 @@ class Usuario
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
     }
 
-    public static function obtenerUsuario($nombre, $tipo)
+    public static function obtenerUsuario($id_usuario)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, tipo, clave, fecha_baja FROM usuarios WHERE nombre = :nombre AND tipo = :tipo");
-        $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
-        $consulta->bindValue(':tipo', $tipo, PDO::PARAM_STR);
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, tipo, clave, fecha_baja FROM usuarios WHERE id_usuario = :id_usuario");
+        $consulta->bindValue(':id_usuario', $id_usuario, PDO::PARAM_STR);
         $consulta->execute();
 
         return $consulta->fetchObject('Usuario');

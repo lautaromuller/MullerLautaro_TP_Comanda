@@ -9,12 +9,12 @@ class OrdenController extends Orden implements IApiUsable
         $parametros = $request->getParsedBody();
 
         $nombreCliente = $parametros['nombre_cliente'];
-        $mesaId = $parametros['mesa_id'];
+        $mesaId = $parametros['codigo_mesa'];
         $productos = $parametros['productos'];
         $foto = isset($parametros['foto']) ? $parametros['foto'] : null;
 
         $orden = new Orden();
-        $orden->mesa_id = $mesaId;
+        $orden->codigo_mesa = $mesaId;
         $orden->nombre_cliente = $nombreCliente;
         $orden->foto = $foto;
         $resultado = $orden->crearOrden($productos);
@@ -46,26 +46,33 @@ class OrdenController extends Orden implements IApiUsable
 
     public function ModificarUno($request, $response, $args)
     {
-        $parametros = $request->getParsedBody();
         $codigo_pedido = $args['codigo_pedido'];
-        $mesaId = $parametros['mesa_id'];
-        $nombreCliente = $parametros['nombre_cliente'];
-        $productos= $parametros['productos'];
+        
+        if (strlen($codigo_pedido) == 5) {
+            $parametros = $request->getParsedBody();
+            $mesaId = $parametros['codigo_mesa'];
+            $nombreCliente = $parametros['nombre_cliente'];
+            $productos = $parametros['productos'];
 
-        Orden::modificarOrden($codigo_pedido, $mesaId, $nombreCliente, $productos);
+            Orden::modificarOrden($codigo_pedido, $mesaId, $nombreCliente, $productos);
 
-        $payload = json_encode(array("mensaje" => "Orden modificada con éxito"));
+            $payload = json_encode(array("mensaje" => "Orden modificada con éxito"));
 
-        $response->getBody()->write($payload);
-        return $response->withHeader('Content-Type', 'application/json');
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+        else{
+            $payload = json_encode(array("error" => "El código de pedido no puede estar vacío"));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
     }
 
     public function BorrarUno($request, $response, $args)
     {
         $codigo_pedido = $args['codigo_pedido'];
         Orden::borrarOrden($codigo_pedido);
-
-        $payload = json_encode(array("mensaje" => "Orden borrada con éxito"));
+        $payload = json_encode(array("mensaje" => "órden borrada con éxito"));
 
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');

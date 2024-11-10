@@ -3,16 +3,16 @@
 class Mesa
 {
     public $id;
-    public $codigo;
+    public $codigo_mesa;
     public $estado;
     public $fecha_baja;
 
     public function crearMesa()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO mesas (codigo_mesa, estado) VALUES (:codigo_mesa, :estado)");
-        $consulta->bindValue(':codigo_mesa', $this->codigo, PDO::PARAM_STR);
-        $consulta->bindValue(':estado', $this->estado, PDO::PARAM_STR);
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO mesas (codigo_mesa, estado, fecha_baja) VALUES (:codigo_mesa, :estado, null)");
+        $consulta->bindValue(':codigo_mesa', $this->codigo_mesa, PDO::PARAM_STR);
+        $consulta->bindValue(':estado', "disponible", PDO::PARAM_STR);
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -34,7 +34,8 @@ class Mesa
         $consulta->bindValue(':codigo_mesa', $codigo, PDO::PARAM_STR);
         $consulta->execute();
 
-        return $consulta->fetchObject('Mesa');
+        return $consulta->fetchObject('Mesa')?: false;
+
     }
 
     public static function modificarMesa($codigo, $estado)
