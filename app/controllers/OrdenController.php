@@ -47,25 +47,31 @@ class OrdenController extends Orden implements IApiUsable
     public function ModificarUno($request, $response, $args)
     {
         $codigo_pedido = $args['codigo_pedido'];
-        
+        $rol = $request->getAttribute('rol_usuario');
+        $parametros = $request->getParsedBody();
+
         if (strlen($codigo_pedido) == 5) {
-            $parametros = $request->getParsedBody();
-            $mesaId = $parametros['codigo_mesa'];
-            $nombreCliente = $parametros['nombre_cliente'];
-            $productos = $parametros['productos'];
+            if ($rol == 'mozo') {
 
-            Orden::modificarOrden($codigo_pedido, $mesaId, $nombreCliente, $productos);
+                $nombreCliente = $parametros['nombre_cliente'];
+                $productos = $parametros['productos'];
+                Orden::modificarDatosOrden($codigo_pedido, $nombreCliente, $productos);
+            } else if ($rol == 'cocinero' || $rol == 'cervecero' || $rol == 'bartender') {
 
-            $payload = json_encode(array("mensaje" => "Orden modificada con éxito"));
-
-            $response->getBody()->write($payload);
+                $estado = $parametros['estado'];
+                $sector = $parametros['sector'];
+                Orden::modificarEstadoOrden($codigo_pedido, $sector, $estado);
+            } else {
+                $response->getBody()->write(json_encode(array("mensaje" => "Acesso denegado")));
+                return $response->withHeader('Content-Type', 'application/json');
+            }
+        } else {
+            $response->getBody()->write(json_encode(array("error" => "El código de pedido no puede estar vacío")));
             return $response->withHeader('Content-Type', 'application/json');
         }
-        else{
-            $payload = json_encode(array("error" => "El código de pedido no puede estar vacío"));
-            $response->getBody()->write($payload);
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
-        }
+
+        $response->getBody()->write(json_encode(array("mensaje" => "Orden modificada con éxito")));
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function BorrarUno($request, $response, $args)
@@ -75,6 +81,28 @@ class OrdenController extends Orden implements IApiUsable
         $payload = json_encode(array("mensaje" => "órden borrada con éxito"));
 
         $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function CargarArchivo($request, $response, $args)
+    {
+        if (isset($_FILES['archivo_csv'])) {
+            $ruta = $_FILES['archivo_csv']['tmp_name'];
+
+            $res = Orden::cargarCSV($ruta);
+
+            $response->getBody()->write(json_encode($res));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        return "Falta archivo CSV.";
+    }
+
+    public function DescargarArchivo($request, $response, $args)
+    {
+        Orden::descargarCSV();
+
+        $response->getBody()->write(json_encode(array("mensaje" => "archivo cargado con éxito")));
         return $response->withHeader('Content-Type', 'application/json');
     }
 }

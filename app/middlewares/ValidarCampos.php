@@ -21,8 +21,7 @@ class ValidarCampos
                     'error' => "Datos incorrectos, falta el campo: " . $campo
                 ]));
                 return $response
-                    ->withHeader('Content-Type', 'application/json')
-                    ->withStatus(400);
+                    ->withHeader('Content-Type', 'application/json');
             }
         }
         return $handler->handle($request);

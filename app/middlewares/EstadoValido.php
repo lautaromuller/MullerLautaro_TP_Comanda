@@ -15,16 +15,15 @@ class EstadoValido
     {
         $params = $request->getParsedBody();
 
-        if ($params[$this->estado] != 'con cliente comiendo' && $params[$this->estado] != 'con cliente esperando pedido' && $params[$this->estado] != 'con cliente pagando') {
-            $response = new Response();
-            $response->getBody()->write(json_encode([
-                'error' => "El estado puesto no es válido"
-            ]));
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(400);
+        if ($params[$this->estado] == 'cerrada') {
+            return $handler->handle($request);
         }
 
-        return $handler->handle($request);
+        $response = new Response();
+        $response->getBody()->write(json_encode([
+            'error' => "El estado puesto no es válido"
+        ]));
+        return $response
+            ->withHeader('Content-Type', 'application/json');
     }
 }

@@ -20,8 +20,7 @@ class MesaExistente
                     'error' => "Ya existe una mesa con ese código"
                 ]));
                 return $response
-                    ->withHeader('Content-Type', 'application/json')
-                    ->withStatus(400);
+                    ->withHeader('Content-Type', 'application/json');
             }
         }
 

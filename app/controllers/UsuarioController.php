@@ -61,7 +61,7 @@ class UsuarioController extends Usuario implements IApiUsable
   }
 
   public function RegistrarUsuario($request, $response)
-{
+  {
     $parametros = $request->getParsedBody();
     $nombre = $parametros['nombre'];
     $tipo = $parametros['tipo'];
@@ -75,26 +75,48 @@ class UsuarioController extends Usuario implements IApiUsable
 
     $response->getBody()->write(json_encode(['mensaje' => 'Usuario registrado']));
     return $response->withHeader('Content-Type', 'application/json');
-}
+  }
 
+  public function Login($request, $response)
+  {
+    $parametros = $request->getParsedBody();
+    $nombre = $parametros['nombre'];
+    $clave = $parametros['clave'];
 
-public function Login($request, $response) {
-  $parametros = $request->getParsedBody();
-  $nombre = $parametros['nombre'];
-  $clave = $parametros['clave'];
+    $datosUsuario = Usuario::autenticar($nombre, $clave);
 
-  $datosUsuario = Usuario::autenticar($nombre, $clave);
-
-  if ($datosUsuario) {
+    if ($datosUsuario) {
       $token = AutentificadorJWT::CrearToken($datosUsuario);
 
       setcookie('token', $token);
 
       $response->getBody()->write(json_encode(["token" => $token]));
-  } else {
+    } else {
       $response->getBody()->write(json_encode(["mensaje" => "Credenciales inválidas"]));
+    }
+
+    return $response->withHeader('Content-Type', 'application/json');
   }
 
-  return $response->withHeader('Content-Type', 'application/json');
-}
+  public function CargarArchivo($request, $response, $args)
+  {
+    if (isset($_FILES['archivo_csv'])) {
+      $ruta = $_FILES['archivo_csv']['tmp_name'];
+
+      $res = Usuario::cargarCSV($ruta);
+
+      $response->getBody()->write(json_encode($res));
+      return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    return "Falta archivo CSV.";
+  }
+
+  public function DescargarArchivo($request, $response, $args)
+  {
+    Usuario::descargarCSV();
+
+    $response->getBody()->write(json_encode(array("mensaje" => "archivo cargado con éxito")));
+    return $response->withHeader('Content-Type', 'application/json');
+  }
 }

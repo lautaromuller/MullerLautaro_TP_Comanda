@@ -3,6 +3,7 @@
 class Usuario
 {
     public $id;
+    public $id_usuario;
     public $nombre;
     public $tipo;
     public $clave;
@@ -12,7 +13,7 @@ class Usuario
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (id_usuario, nombre, tipo, clave) VALUES (:id_usuario, :nombre, :tipo, :clave)");
-        $id_usuario = rand(0,1000);
+        $id_usuario = rand(0, 1000);
         $claveHash = password_hash($this->clave, PASSWORD_DEFAULT);
         $consulta->bindValue(':id_usuario', $id_usuario, PDO::PARAM_INT);
         $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
@@ -64,7 +65,8 @@ class Usuario
         $consulta->execute();
     }
 
-    public static function autenticar($nombre, $clave) {
+    public static function autenticar($nombre, $clave)
+    {
         $db = AccesoDatos::obtenerInstancia();
         $consulta = $db->prepararConsulta("SELECT id, id_usuario, nombre, tipo, clave, fecha_baja FROM usuarios WHERE nombre = :nombre");
         $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
@@ -81,5 +83,62 @@ class Usuario
         }
 
         return null;
+    }
+
+    public static function descargarCSV()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM usuarios");
+        $consulta->execute();
+        $usuarios = $consulta->fetchAll(PDO::FETCH_ASSOC);
+
+        $nombreArchivo = "usuarios_" . date("d-m-Y") . ".csv";
+        header('Content-Type: text/csv');
+        header("Content-Disposition: attachment; filename={$nombreArchivo}");
+
+        $res = fopen('php://output', 'w');
+
+        if (!empty($usuarios)) {
+            fputcsv($res, array_keys($usuarios[0]));
+        }
+
+        foreach ($usuarios as $usuario) {
+            fputcsv($res, $usuario);
+        }
+
+        fclose($res);
+        exit;
+    }
+
+    public static function cargarCSV($ruta)
+    {
+        $archivo = fopen($ruta, 'r');
+        fgetcsv($archivo);
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        while ($datos = fgetcsv($archivo)) {
+            $consultaExistente = $objAccesoDatos->prepararConsulta("SELECT * FROM usuarios WHERE nombre = :nombre");
+            $consultaExistente->bindValue(':nombre', $datos[0], PDO::PARAM_STR);
+            $consultaExistente->execute();
+            $resultado = $consultaExistente->fetchObject('Usuario');
+
+            if ($resultado) {
+                if (password_verify($datos[2], $resultado->clave)) {
+                    continue;
+                }
+            }
+
+            try {
+                $usuario = new usuario();
+                $usuario->nombre = $datos[0];
+                $usuario->tipo = $datos[1];
+                $usuario->clave = password_hash($datos[2], PASSWORD_DEFAULT);
+                $usuario->crearusuario();
+            } catch (Exception $e) {
+                return array("mensaje" => "Error al cargar los usuarios: {$e->getMessage()}");
+            }
+        }
+
+        fclose($archivo);
+        return array("mensaje" => "Usuarios cargados con éxito");
     }
 }

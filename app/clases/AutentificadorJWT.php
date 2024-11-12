@@ -11,7 +11,7 @@ class AutentificadorJWT
         $payload = array(
             'sub' => $datos['id_usuario'],
             'iat' => $fecha,
-            'exp' => $fecha + (60),
+            'exp' => $fecha + (600),
             'data' => $datos
         );
         

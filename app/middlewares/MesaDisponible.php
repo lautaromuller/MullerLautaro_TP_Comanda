@@ -24,7 +24,6 @@ class MesaDisponible
             'error' => "La mesa no está disponible"
         ]));
         return $response
-            ->withHeader('Content-Type', 'application/json')
-            ->withStatus(400);
+            ->withHeader('Content-Type', 'application/json');
     }
 }

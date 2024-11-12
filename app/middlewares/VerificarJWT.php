@@ -19,6 +19,8 @@ class VerificarJWT
 
             $rol = $decodificado->data->tipo;
 
+            $request = $request->withAttribute('rol_usuario', $rol);
+
             $this->verificarPermisos($request, $rol);
 
             return $handler->handle($request);
@@ -41,10 +43,18 @@ class VerificarJWT
             if (strpos($path, '/ordenes') != false) {
                 return;
             }
+
+            if (strpos($path, '/productos') != false && $metodo == 'GET') {
+                return;
+            }
         }
 
         if ($rol == 'cocinero' || $rol == 'cervecero' || $rol == 'bartender') {
             if (strpos($path, '/ordenes') != false && $metodo == 'PUT') {
+                return;
+            }
+
+            if (strpos($path, '/productos') != false && $metodo == 'GET') {
                 return;
             }
         }
