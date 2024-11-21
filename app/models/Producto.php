@@ -7,15 +7,17 @@ class Producto
     public $precio;
     public $sector;
     public $cantidad;
+    public $tiempo;
 
     public function crearProducto()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO productos (nombre, precio, sector, cantidad) VALUES (:nombre, :precio, :sector, :cantidad)");
-        $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO productos (nombre, precio, sector, cantidad, tiempo) VALUES (:nombre, :precio, :sector, :cantidad, :tiempo)");
+        $consulta->bindValue(':nombre', ucfirst($this->nombre), PDO::PARAM_STR);
         $consulta->bindValue(':precio', $this->precio, PDO::PARAM_STR);
-        $consulta->bindValue(':sector', $this->sector, PDO::PARAM_STR);
+        $consulta->bindValue(':sector', strtolower($this->sector), PDO::PARAM_STR);
         $consulta->bindValue(':cantidad', $this->cantidad, PDO::PARAM_INT);
+        $consulta->bindValue(':tiempo', $this->tiempo, PDO::PARAM_INT);
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -24,7 +26,7 @@ class Producto
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, precio, sector, cantidad FROM productos");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, precio, sector, cantidad, tiempo FROM productos");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
@@ -33,21 +35,22 @@ class Producto
     public static function obtenerProducto($id)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, precio, sector, cantidad FROM productos WHERE id = :id");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, precio, sector, cantidad, tiempo FROM productos WHERE id = :id");
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
 
         return $consulta->fetchObject('Producto');
     }
 
-    public static function modificarProducto($id, $nombre, $precio, $sector, $cantidad)
+    public static function modificarProducto($id, $nombre, $precio, $sector, $cantidad, $tiempo)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET nombre = :nombre, precio = :precio, sector = :sector, cantidad = :cantidad WHERE id = :id");
-        $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET nombre = :nombre, precio = :precio, sector = :sector, cantidad = :cantidad, tiempo = :tiempo WHERE id = :id");
+        $consulta->bindValue(':nombre', ucfirst($nombre), PDO::PARAM_STR);
         $consulta->bindValue(':precio', $precio, PDO::PARAM_STR);
-        $consulta->bindValue(':sector', $sector, PDO::PARAM_STR);
+        $consulta->bindValue(':sector', strtolower($sector), PDO::PARAM_STR);
         $consulta->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
+        $consulta->bindValue(':tiempo', $tiempo, PDO::PARAM_INT);
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
     }
@@ -96,9 +99,9 @@ class Producto
             $consultaExistente->bindValue(':nombre', $datos[0], PDO::PARAM_STR);
             $consultaExistente->execute();
             $resultado = $consultaExistente->fetchObject('Producto');
-
+            $cantActual = $resultado->cantidad;
             if ($resultado) {
-                continue;
+                Producto::borrarProducto($resultado->id);
             }
 
             try {
@@ -106,7 +109,8 @@ class Producto
                 $producto->nombre = $datos[0];
                 $producto->precio = $datos[1];
                 $producto->sector = $datos[2];
-                $producto->cantidad = $datos[3];
+                $producto->cantidad = $datos[3] + $cantActual;
+                $producto->tiempo = $datos[4];
                 $producto->crearproducto();
             } catch (Exception $e) {
                 return array("mensaje" => "Error al cargar los productos: {$e->getMessage()}");

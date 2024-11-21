@@ -8,7 +8,8 @@ class MesaDisponible
 
     public function __invoke($request, $handler)
     {
-        $params = json_decode($request->getBody(), true);
+        $params = $request->getParsedBody();
+        // $params = json_decode($request->getBody(), true);
         $codigo = $params['codigo_mesa'];
 
         $mesas = Mesa::obtenerTodos();

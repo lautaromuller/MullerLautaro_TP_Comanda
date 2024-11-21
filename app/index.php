@@ -41,13 +41,13 @@ $app->addBodyParsingMiddleware();
 // Routes
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
   $group->post('[/]', \UsuarioController::class . ':CargarUno')
-    ->add(new ValidarCampos(array("nombre", "tipo", "clave")));
+    ->add(new ValidarCampos(array("nombre", "sector", "clave")));
 
   $group->get('[/]', \UsuarioController::class . ':TraerTodos');
   $group->get('/{id_usuario}', \UsuarioController::class . ':TraerUno');
 
   $group->put('/{id}', \UsuarioController::class . ':ModificarUno')
-    ->add(new ValidarCampos(array("nombre", "tipo", "clave")));
+    ->add(new ValidarCampos(array("nombre", "sector", "clave")));
 
   $group->delete('/{id}', \UsuarioController::class . ':BorrarUno');
 })->add(new VerificarJWT());
@@ -93,34 +93,43 @@ $app->group('/ordenes', function (RouteCollectorProxy $group) {
   $group->get('[/]', [OrdenController::class, 'TraerTodos']);
   $group->get('/{codigo_pedido}', [OrdenController::class, 'TraerUno']);
 
-  $group->put('/{codigo_pedido}', [OrdenController::class, 'ModificarUno'])
-    ->add(new ValidarCampos(array("codigo_mesa", "nombre_cliente", "productos")));
+  $group->put('/{codigo_pedido}', [OrdenController::class, 'ModificarUno']);
 
   $group->delete('/{codigo_pedido}', [OrdenController::class, 'BorrarUno']);
 })->add(new VerificarJWT());
 
-$app->get('[/]', function (Request $request, Response $response) {
-  $payload = json_encode(array("mensaje" => "hola"));
-
-  $response->getBody()->write($payload);
-  return $response->withHeader('Content-Type', 'application/json');
-})->add(new VerificarJWT());
 
 $app->post('/registro', \UsuarioController::class . ':RegistrarUsuario');
 $app->post('/login', \UsuarioController::class . ':Login');
 
 
+$app->group('/ordenes_csv', function (RouteCollectorProxy $group) {
+  $group->post('[/]', [OrdenController::class, 'CargarArchivo']);
+  $group->get('[/]', [OrdenController::class, 'DescargarArchivo']);
+})->add(new VerificarJWT());
 
-$app->post('/ordenes_csv', [OrdenController::class, 'CargarArchivo']);
-$app->get('/ordenes_csv', [OrdenController::class, 'DescargarArchivo']);
+$app->group('/mesas_csv', function (RouteCollectorProxy $group) {
+  $group->post('[/]', [MesaController::class, 'CargarArchivo']);
+  $group->get('[/]', [MesaController::class, 'DescargarArchivo']);
+})->add(new VerificarJWT());
 
-$app->post('/mesas_csv', [MesaController::class, 'CargarArchivo']);
-$app->get('/mesas_csv', [MesaController::class, 'DescargarArchivo']);
+$app->group('/usuarios_csv', function (RouteCollectorProxy $group) {
+  $group->post('[/]', [UsuarioController::class, 'CargarArchivo']);
+  $group->get('[/]', [UsuarioController::class, 'DescargarArchivo']);
+})->add(new VerificarJWT());
 
-$app->post('/usuarios_csv', [UsuarioController::class, 'CargarArchivo']);
-$app->get('/usuarios_csv', [UsuarioController::class, 'DescargarArchivo']);
+$app->group('/productos_csv', function (RouteCollectorProxy $group) {
+  $group->post('[/]', [ProductoController::class, 'CargarArchivo']);
+  $group->get('[/]', [ProductoController::class, 'DescargarArchivo']);
+})->add(new VerificarJWT());
 
-$app->post('/productos_csv', [ProductoController::class, 'CargarArchivo']);
-$app->get('/productos_csv', [ProductoController::class, 'DescargarArchivo']);
+$app->get('/pendientes', [OrdenController::class, 'TraerPendientes'])->add(new VerificarJWT());
+
+$app->group('/clientes', function (RouteCollectorProxy $group){
+  $group->get('/{codigo_pedido}/{codigo_mesa}', [OrdenController::class, 'VerTiempoPedido']);
+  $group->post('[/]', [UsuarioController::class, 'CargarEncuesta']);
+});
+
+$app->get('[/]', [OrdenController::class, 'DescargarArchivoPDF']);
 
 $app->run();

@@ -42,22 +42,21 @@ class MesaController extends Mesa implements IApiUsable
     public function ModificarUno($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
-        $rol = $request->getAttribute('rol_usuario');
+        $sector = $request->getAttribute('sector_usuario');
 
         $codigo = $args['codigo_mesa'];
-        $estado = $parametros['estado'];
+        $estado = strtolower($parametros['estado']);
 
-        if (($estado == 'cerrada' && $rol == 'mozo') || ($estado != 'cerrada' && $rol == 'socio' && $estado != 'disponible' && $rol == 'socio')) {
+        if (($sector == 'mozo' && ($estado == 'con cliente comiendo' || $estado == 'con cliente pagando')) || ($sector == 'socio' && $estado == 'disponible')) {
+            Mesa::modificarMesa($codigo, $estado);
+
+            $response->getBody()->write(json_encode(array("mensaje" => "Mesa modificada con éxito")));
+            return $response->withHeader('Content-Type', 'application/json');
+
+        } else {
             $response->getBody()->write(json_encode(array("mensaje" => "No tiene permisos para esta operación")));
             return $response->withHeader('Content-Type', 'application/json');
         }
-
-        Mesa::modificarMesa($codigo, $estado);
-
-        $payload = json_encode(array("mensaje" => "Mesa modificada con éxito"));
-
-        $response->getBody()->write($payload);
-        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function BorrarUno($request, $response, $args)

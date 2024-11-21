@@ -11,7 +11,7 @@ class UsuarioController extends Usuario implements IApiUsable
 
     $usuario = new Usuario();
     $usuario->nombre = $parametros['nombre'];
-    $usuario->tipo = $parametros['tipo'];
+    $usuario->sector = $parametros['sector'];
     $usuario->clave = $parametros['clave'];
     $usuario->crearUsuario();
 
@@ -42,10 +42,10 @@ class UsuarioController extends Usuario implements IApiUsable
 
     $parametros = $request->getParsedBody();
     $nombre = $parametros['nombre'];
-    $tipo = $parametros['tipo'];
+    $sector = $parametros['sector'];
     $clave = $parametros['clave'];
 
-    Usuario::modificarUsuario($usuarioId, $nombre, $tipo, $clave);
+    Usuario::modificarUsuario($usuarioId, $nombre, $sector, $clave);
 
     $response->getBody()->write(json_encode(array("mensaje" => "Usuario modificado con éxito")));
     return $response->withHeader('Content-Type', 'application/json');
@@ -64,12 +64,12 @@ class UsuarioController extends Usuario implements IApiUsable
   {
     $parametros = $request->getParsedBody();
     $nombre = $parametros['nombre'];
-    $tipo = $parametros['tipo'];
+    $sector = $parametros['sector'];
     $clave = $parametros['clave'];
 
     $usr = new Usuario();
     $usr->nombre = $nombre;
-    $usr->tipo = $tipo;
+    $usr->sector = $sector;
     $usr->clave = $clave;
     $usr->crearUsuario();
 
@@ -86,11 +86,12 @@ class UsuarioController extends Usuario implements IApiUsable
     $datosUsuario = Usuario::autenticar($nombre, $clave);
 
     if ($datosUsuario) {
-      $token = AutentificadorJWT::CrearToken($datosUsuario);
-
-      setcookie('token', $token);
-
-      $response->getBody()->write(json_encode(["token" => $token]));
+      if(empty($datosUsuario["fecha_baja"])){
+        $token = AutentificadorJWT::CrearToken($datosUsuario);
+        $response->getBody()->write(json_encode(['mensaje' => $token]));
+      } else {
+        $response->getBody()->write(json_encode(["mensaje" => "El usuario está dado de baja"]));
+      }
     } else {
       $response->getBody()->write(json_encode(["mensaje" => "Credenciales inválidas"]));
     }
@@ -103,20 +104,39 @@ class UsuarioController extends Usuario implements IApiUsable
     if (isset($_FILES['archivo_csv'])) {
       $ruta = $_FILES['archivo_csv']['tmp_name'];
 
-      $res = Usuario::cargarCSV($ruta);
+      Usuario::cargarCSV($ruta);
 
-      $response->getBody()->write(json_encode($res));
+      $response->getBody()->write(json_encode(array("mensaje" => "archivo cargado con éxito")));
       return $response->withHeader('Content-Type', 'application/json');
     }
 
-    return "Falta archivo CSV.";
+    $response->getBody()->write(json_encode(array("mensaje" => "Falta archivo CSV")));
+    return $response->withHeader('Content-Type', 'application/json');
   }
 
   public function DescargarArchivo($request, $response, $args)
   {
     Usuario::descargarCSV();
 
-    $response->getBody()->write(json_encode(array("mensaje" => "archivo cargado con éxito")));
+    $response->getBody()->write(json_encode(array("mensaje" => "archivo descargado con éxito")));
+    return $response->withHeader('Content-Type', 'application/json');
+  }
+
+  public function CargarEncuesta($request, $response, $args)
+  {
+    $parametros = $request->getParsedBody();
+    $p_mesa = $parametros['puntaje_mesa'];
+    $p_restaurante = $parametros['puntaje_restaurante'];
+    $p_mozo = $parametros['puntaje_mozo'];
+    $p_cocinero = $parametros['puntaje_cocinero'];
+    $critica = $parametros['critica'] ?? null;
+
+    if($p_mesa && $p_restaurante && $p_mozo && $p_cocinero){
+      Usuario::subirEncuesta($p_mesa,$p_restaurante,$p_mozo,$p_cocinero,$critica);
+      $response->getBody()->write(json_encode("Encuesta subida con éxito"));
+    } else {
+      $response->getBody()->write(json_encode("Faltan datos en la encuesta"));
+    }
     return $response->withHeader('Content-Type', 'application/json');
   }
 }

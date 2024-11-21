@@ -1,11 +1,12 @@
 <?php
+
 use Slim\Psr7\Response;
 
 class VerificarJWT
 {
-    public function __invoke($request, $handler)
-    {
-        $token = $_COOKIE['token'] ?? '';
+    public function __invoke($request, $handler) {
+        $header = $request->getHeader('Authorization');
+        $token = isset($header[0]) ? str_replace('Bearer ', '', $header[0]) : null;
 
         $response = new Response();
 
@@ -17,11 +18,11 @@ class VerificarJWT
         try {
             $decodificado = AutentificadorJWT::VerificarToken($token);
 
-            $rol = $decodificado->data->tipo;
+            $sector = $decodificado->data->sector;
 
-            $request = $request->withAttribute('rol_usuario', $rol);
+            $request = $request->withAttribute('sector_usuario', $sector);
 
-            $this->verificarPermisos($request, $rol);
+            $this->verificarPermisos($request, $sector);
 
             return $handler->handle($request);
         } catch (Exception $e) {
@@ -30,13 +31,17 @@ class VerificarJWT
         }
     }
 
-    private function verificarPermisos($request, $rol)
+    private function verificarPermisos($request, $sector)
     {
         $path = $request->getUri()->getPath();
         $metodo = $request->getMethod();
 
-        if ($rol == 'mozo') {
+        if ($sector == 'mozo') {
             if (strpos($path, '/mesas') != false && ($metodo == 'GET' || $metodo == 'PUT')) {
+                return;
+            }
+
+            if (strpos($path, '/productos') != false && $metodo == 'GET') {
                 return;
             }
 
@@ -44,27 +49,43 @@ class VerificarJWT
                 return;
             }
 
-            if (strpos($path, '/productos') != false && $metodo == 'GET') {
+            if (strpos($path, '/ordenes_csv') != false && $metodo == 'GET') {
+                return;
+            }
+
+            if(strpos($path, '/ordenes_csv') != false || strpos($path, '/mesas_csv') != false || strpos($path, '/usuarios_csv') != false || strpos($path, '/productos_csv') != false){
                 return;
             }
         }
 
-        if ($rol == 'cocinero' || $rol == 'cervecero' || $rol == 'bartender') {
-            if (strpos($path, '/ordenes') != false && $metodo == 'PUT') {
+        if ($sector == 'cocina' || $sector == 'cerveceria' || $sector == 'bar') {
+            if (strpos($path, '/ordenes') != false && ($metodo == 'PUT' || $metodo == 'GET')) {
                 return;
             }
 
             if (strpos($path, '/productos') != false && $metodo == 'GET') {
                 return;
             }
+
+            if (strpos($path, '/pendientes') != false) {
+                return;
+            }
+
+            if(strpos($path, '/ordenes_csv') != false || strpos($path, '/mesas_csv') != false || strpos($path, '/usuarios_csv') != false || strpos($path, '/productos_csv') != false){
+                return;
+            }
         }
 
-        if ($rol == 'socio') {
+        if ($sector == 'socio') {
             if (strpos($path, '/usuarios') != false || strpos($path, '/mesas') != false || strpos($path, '/productos') != false) {
                 return;
             }
 
             if (strpos($path, '/ordenes') != false && $metodo == 'GET') {
+                return;
+            }
+
+            if(strpos($path, '/ordenes_csv') != false || strpos($path, '/mesas_csv') != false || strpos($path, '/usuarios_csv') != false || strpos($path, '/productos_csv') != false){
                 return;
             }
         }

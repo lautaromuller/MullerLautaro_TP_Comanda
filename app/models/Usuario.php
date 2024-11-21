@@ -5,19 +5,27 @@ class Usuario
     public $id;
     public $id_usuario;
     public $nombre;
-    public $tipo;
+    public $sector;
     public $clave;
     public $fecha_baja;
 
     public function crearUsuario()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (id_usuario, nombre, tipo, clave) VALUES (:id_usuario, :nombre, :tipo, :clave)");
-        $id_usuario = rand(0, 1000);
+        $id_usuario = null;
+        do {
+            $id_usuario = rand(0, 1000);
+            $consultaId = $objAccesoDatos->prepararConsulta("SELECT COUNT(*) AS contador FROM usuarios WHERE id_usuario = :id_usuario");
+            $consultaId->bindValue(':id_usuario', $id_usuario, PDO::PARAM_INT);
+            $consultaId->execute();
+            $resultado = $consultaId->fetch(PDO::FETCH_ASSOC);
+        } while ($resultado['contador'] > 0);
+
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (id_usuario, nombre, sector, clave) VALUES (:id_usuario, :nombre, :sector, :clave)");
         $claveHash = password_hash($this->clave, PASSWORD_DEFAULT);
         $consulta->bindValue(':id_usuario', $id_usuario, PDO::PARAM_INT);
-        $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
-        $consulta->bindValue(':tipo', $this->tipo, PDO::PARAM_STR);
+        $consulta->bindValue(':nombre', ucfirst($this->nombre), PDO::PARAM_STR);
+        $consulta->bindValue(':sector', strtolower($this->sector), PDO::PARAM_STR);
         $consulta->bindValue(':clave', $claveHash);
         $consulta->execute();
 
@@ -27,7 +35,7 @@ class Usuario
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, tipo, clave, fecha_baja FROM usuarios");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, sector, clave, fecha_baja FROM usuarios");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
@@ -36,19 +44,19 @@ class Usuario
     public static function obtenerUsuario($id_usuario)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, tipo, clave, fecha_baja FROM usuarios WHERE id_usuario = :id_usuario");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, sector, clave, fecha_baja FROM usuarios WHERE id_usuario = :id_usuario");
         $consulta->bindValue(':id_usuario', $id_usuario, PDO::PARAM_STR);
         $consulta->execute();
 
         return $consulta->fetchObject('Usuario');
     }
 
-    public static function modificarUsuario($id, $nombre, $tipo, $clave)
+    public static function modificarUsuario($id, $nombre, $sector, $clave)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET nombre = :nombre, tipo = :tipo, clave = :clave WHERE id = :id");
-        $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
-        $consulta->bindValue(':tipo', $tipo, PDO::PARAM_STR);
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET nombre = :nombre, sector = :sector, clave = :clave WHERE id = :id");
+        $consulta->bindValue(':nombre', ucfirst($nombre), PDO::PARAM_STR);
+        $consulta->bindValue(':sector', strtolower($sector), PDO::PARAM_STR);
         $claveHash = password_hash($clave, PASSWORD_DEFAULT);
         $consulta->bindValue(':clave', $claveHash);
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
@@ -59,7 +67,7 @@ class Usuario
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
         $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET fecha_baja = :fechaBaja WHERE id = :id");
-        $fecha = new DateTime(date("d-m-Y"));
+        $fecha = new DateTime();
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->bindValue(':fechaBaja', date_format($fecha, 'Y-m-d'));
         $consulta->execute();
@@ -68,7 +76,7 @@ class Usuario
     public static function autenticar($nombre, $clave)
     {
         $db = AccesoDatos::obtenerInstancia();
-        $consulta = $db->prepararConsulta("SELECT id, id_usuario, nombre, tipo, clave, fecha_baja FROM usuarios WHERE nombre = :nombre");
+        $consulta = $db->prepararConsulta("SELECT id, id_usuario, nombre, sector, clave, fecha_baja FROM usuarios WHERE nombre = :nombre");
         $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
         $consulta->execute();
 
@@ -78,7 +86,8 @@ class Usuario
             return [
                 "id_usuario" => $usuario->id,
                 "nombre" => $usuario->nombre,
-                "tipo" => $usuario->tipo
+                "sector" => $usuario->sector,
+                "fecha_baja" => $usuario->fecha_baja
             ];
         }
 
@@ -127,18 +136,27 @@ class Usuario
                 }
             }
 
-            try {
-                $usuario = new usuario();
-                $usuario->nombre = $datos[0];
-                $usuario->tipo = $datos[1];
-                $usuario->clave = password_hash($datos[2], PASSWORD_DEFAULT);
-                $usuario->crearusuario();
-            } catch (Exception $e) {
-                return array("mensaje" => "Error al cargar los usuarios: {$e->getMessage()}");
-            }
+            $usuario = new usuario();
+            $usuario->nombre = $datos[0];
+            $usuario->sector = $datos[1];
+            $usuario->clave = password_hash($datos[2], PASSWORD_DEFAULT);
+            $usuario->crearusuario();
         }
 
         fclose($archivo);
-        return array("mensaje" => "Usuarios cargados con éxito");
+        exit;
+    }
+
+    public static function subirEncuesta($mesa, $restaurante, $mozo, $cocinero, $critica){
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("INSERT INTO encuesta (mesa, restaurante, mozo, cocinero, critica, fecha) VALUES (:mesa, :restaurante, :mozo, :cocinero, :critica, :fecha)");
+        $fecha = new DateTime();
+        $consulta->bindValue(':mesa', $mesa, PDO::PARAM_INT);
+        $consulta->bindValue(':restaurante', $restaurante, PDO::PARAM_INT);
+        $consulta->bindValue(':mozo', $mozo, PDO::PARAM_INT);
+        $consulta->bindValue(':cocinero', $cocinero, PDO::PARAM_INT);
+        $consulta->bindValue(':critica', $critica, PDO::PARAM_STR);
+        $consulta->bindValue(':fecha', date_format($fecha, 'Y-m-d'), PDO::PARAM_STR);
+        $consulta->execute();
     }
 }
