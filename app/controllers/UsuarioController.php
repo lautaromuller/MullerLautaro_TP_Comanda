@@ -32,7 +32,7 @@ class UsuarioController extends Usuario implements IApiUsable
   {
     $lista = Usuario::obtenerTodos();
 
-    $response->getBody()->write(json_encode(array("listaUsuario" => $lista)));
+    $response->getBody()->write(json_encode(array("lista Usuario" => $lista)));
     return $response->withHeader('Content-Type', 'application/json');
   }
 
@@ -54,9 +54,17 @@ class UsuarioController extends Usuario implements IApiUsable
   public function BorrarUno($request, $response, $args)
   {
     $usuarioId = $args['id'];
-    Usuario::borrarUsuario($usuarioId);
+    $accion = $args['accion'];
+    if($accion == "suspendido"){
+      Usuario::borrarUsuario($usuarioId, $accion);
+      $response->getBody()->write(json_encode(array("mensaje" => "Usuario suspendido")));
+    } else if($accion == "dado de baja"){
+      Usuario::borrarUsuario($usuarioId, $accion);
+      $response->getBody()->write(json_encode(array("mensaje" => "Usuario dado de baja")));
+    } else{
+      $response->getBody()->write(json_encode(array("mensaje" => "No se pudo borrar el usuario. Acción no válida")));
+    }
 
-    $response->getBody()->write(json_encode(array("mensaje" => "Usuario borrado con exito")));
     return $response->withHeader('Content-Type', 'application/json');
   }
 
@@ -86,7 +94,7 @@ class UsuarioController extends Usuario implements IApiUsable
     $datosUsuario = Usuario::autenticar($nombre, $clave);
 
     if ($datosUsuario) {
-      if(empty($datosUsuario["fecha_baja"])){
+      if (empty($datosUsuario["fecha_baja"])) {
         $token = AutentificadorJWT::CrearToken($datosUsuario);
         $response->getBody()->write(json_encode(['mensaje' => $token]));
       } else {
@@ -125,18 +133,41 @@ class UsuarioController extends Usuario implements IApiUsable
   public function CargarEncuesta($request, $response, $args)
   {
     $parametros = $request->getParsedBody();
+    $c_mesa = $parametros['codigo_mesa'];
+    $c_pedido = $parametros['codigo_pedido'];
     $p_mesa = $parametros['puntaje_mesa'];
     $p_restaurante = $parametros['puntaje_restaurante'];
     $p_mozo = $parametros['puntaje_mozo'];
     $p_cocinero = $parametros['puntaje_cocinero'];
-    $critica = $parametros['critica'] ?? null;
+    $mensaje = $parametros['mensaje'] ?? null;
 
-    if($p_mesa && $p_restaurante && $p_mozo && $p_cocinero){
-      Usuario::subirEncuesta($p_mesa,$p_restaurante,$p_mozo,$p_cocinero,$critica);
-      $response->getBody()->write(json_encode("Encuesta subida con éxito"));
+    if ($mensaje != null && strlen($mensaje) > 66) {
+      $response->getBody()->write(json_encode("El mensaje no puede tener más de 66 caracteres"));
+      return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    $orden = Orden::obtenerOrden($c_pedido);
+    if (isset($orden) && $p_mesa && $p_restaurante && $p_mozo && $p_cocinero) {
+      if(!Usuario::existeEncuesta($c_pedido)){
+        Usuario::subirEncuesta($p_mesa, $p_restaurante, $p_mozo, $p_cocinero, $mensaje, $c_mesa, $c_pedido);
+        $response->getBody()->write(json_encode("Encuesta subida con éxito"));
+      }
+      else{
+        $response->getBody()->write(json_encode("La encuesta ya fue subida"));
+      }
     } else {
       $response->getBody()->write(json_encode("Faltan datos en la encuesta"));
     }
     return $response->withHeader('Content-Type', 'application/json');
   }
+
+  public function VerComentarios($request, $response, $args)
+  {
+    $lista = Usuario::mejoresComentarios();
+
+    $response->getBody()->write(json_encode(array("mejores comentarios" => $lista)));
+    return $response->withHeader('Content-Type', 'application/json');
+  }
+
+  
 }

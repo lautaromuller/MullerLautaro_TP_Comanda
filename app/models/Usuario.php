@@ -21,12 +21,20 @@ class Usuario
             $resultado = $consultaId->fetch(PDO::FETCH_ASSOC);
         } while ($resultado['contador'] > 0);
 
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (id_usuario, nombre, sector, clave) VALUES (:id_usuario, :nombre, :sector, :clave)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (id_usuario, nombre, sector, clave, estado) VALUES (:id_usuario, :nombre, :sector, :clave, 'activo')");
         $claveHash = password_hash($this->clave, PASSWORD_DEFAULT);
         $consulta->bindValue(':id_usuario', $id_usuario, PDO::PARAM_INT);
         $consulta->bindValue(':nombre', ucfirst($this->nombre), PDO::PARAM_STR);
         $consulta->bindValue(':sector', strtolower($this->sector), PDO::PARAM_STR);
         $consulta->bindValue(':clave', $claveHash);
+        $consulta->execute();
+
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO registro_usuario (dia, horario, nombre, sector) VALUES (:dia, :horario, :nombre, :sector)");
+        $fecha = new DateTime();
+        $consulta->bindValue(':dia', date_format($fecha, 'Y-m-d'));
+        $consulta->bindValue(':horario', date_format($fecha, 'H:i:s'));
+        $consulta->bindValue(':nombre', ucfirst($this->nombre), PDO::PARAM_STR);
+        $consulta->bindValue(':sector', strtolower($this->sector), PDO::PARAM_STR);
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -63,13 +71,14 @@ class Usuario
         $consulta->execute();
     }
 
-    public static function borrarUsuario($id)
+    public static function borrarUsuario($id, $accion)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET fecha_baja = :fechaBaja WHERE id = :id");
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET fecha_baja = :fechaBaja, estado = :estado WHERE id = :id");
         $fecha = new DateTime();
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->bindValue(':fechaBaja', date_format($fecha, 'Y-m-d'));
+        $consulta->bindValue(':estado', $accion, PDO::PARAM_STR);
         $consulta->execute();
     }
 
@@ -147,16 +156,59 @@ class Usuario
         exit;
     }
 
-    public static function subirEncuesta($mesa, $restaurante, $mozo, $cocinero, $critica){
+    public static function subirEncuesta($mesa, $restaurante, $mozo, $cocinero, $mensaje, $c_mesa, $c_pedido)
+    {
         $db = AccesoDatos::obtenerInstancia();
-        $consulta = $db->prepararConsulta("INSERT INTO encuesta (mesa, restaurante, mozo, cocinero, critica, fecha) VALUES (:mesa, :restaurante, :mozo, :cocinero, :critica, :fecha)");
+        $consulta = $db->prepararConsulta(
+            "INSERT INTO encuesta (mesa, restaurante, mozo, cocinero, mensaje, fecha, codigo_mesa, codigo_pedido, puntaje) 
+            VALUES (:mesa, :restaurante, :mozo, :cocinero, :mensaje, :fecha, :codigo_mesa, :codigo_pedido, :puntaje)"
+        );
         $fecha = new DateTime();
         $consulta->bindValue(':mesa', $mesa, PDO::PARAM_INT);
         $consulta->bindValue(':restaurante', $restaurante, PDO::PARAM_INT);
         $consulta->bindValue(':mozo', $mozo, PDO::PARAM_INT);
         $consulta->bindValue(':cocinero', $cocinero, PDO::PARAM_INT);
-        $consulta->bindValue(':critica', $critica, PDO::PARAM_STR);
+        $consulta->bindValue(':mensaje', $mensaje, PDO::PARAM_STR);
         $consulta->bindValue(':fecha', date_format($fecha, 'Y-m-d'), PDO::PARAM_STR);
+        $consulta->bindValue(':codigo_mesa', $c_mesa, PDO::PARAM_STR);
+        $consulta->bindValue(':codigo_pedido', $c_pedido, PDO::PARAM_STR);
+        $consulta->bindValue(':puntaje', round((($mesa + $restaurante + $mozo + $cocinero) / 4)), PDO::PARAM_INT);
         $consulta->execute();
+
+        $consulta = $db->prepararConsulta("UPDATE registro_mesas SET puntaje = :puntaje WHERE codigo_mesa = :c_mesa AND codigo_pedido = :c_pedido");
+        $consulta->bindValue(':puntaje', round((($mesa + $restaurante + $mozo + $cocinero) / 4)), PDO::PARAM_INT);
+        $consulta->bindValue(':codigo_mesa', $c_mesa, PDO::PARAM_STR);
+        $consulta->bindValue(':codigo_pedido', $c_pedido, PDO::PARAM_STR);
+        $consulta->execute();
+    }
+
+    public static function existeEncuesta($c_pedido)
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT COUNT(*) AS contador FROM encuesta WHERE codigo_pedido = :codigo_pedido");
+        $consulta->bindValue(':codigo_pedido', $c_pedido, PDO::PARAM_STR);
+        $consulta->execute();
+        $resultado = $consulta->fetch(PDO::FETCH_ASSOC);
+
+        if ($resultado['contador'] > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function mejoresComentarios()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT * FROM encuesta ORDER BY puntaje DESC LIMIT 10");
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function ultimoUsuario()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT * FROM regitro_usuario ORDER BY dia DESC, horario DESC LIMIT 1");
+        $consulta->execute();
+        return $consulta->fetchObject('Usuario');
     }
 }

@@ -70,7 +70,35 @@ class OrdenController extends Orden implements IApiUsable
             }
         }
 
-        $response->getBody()->write(json_encode(array("listaPendientes" => $listaPendientes)));
+        $response->getBody()->write(json_encode(array("lista Pendientes" => $listaPendientes)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function TraerListos($request, $response, $args)
+    {
+        $lista = Orden::obtenerTodos();
+
+        $listos = array();
+        foreach ($lista as $orden) {
+            if ($orden->estado_pedido == "listo para servir") {
+                array_push($listos, $orden);
+            }
+        }
+
+        $response->getBody()->write(json_encode(array("lista Terminados" => $listos)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function PrecioComanda($request, $response, $args)
+    {
+        $codigo_pedido = $args["codigo_pedido"];
+        $codigo_mesa = $args["codigo_mesa"];
+        $orden = Orden::obtenerOrden($codigo_pedido);
+
+        Mesa::modificarMesa($codigo_mesa, "con cliente pagando");
+        Mesa::registrarMesa($codigo_mesa, $codigo_pedido, $orden->precio_total);
+
+        $response->getBody()->write(json_encode(array("Mensaje" => "Estado de mesa modificado", "Precio total" => $orden->precio_total)));
         return $response->withHeader('Content-Type', 'application/json');
     }
 
@@ -169,7 +197,7 @@ class OrdenController extends Orden implements IApiUsable
             $orden->tiempo = 0;
         }
 
-        $response->getBody()->write(json_encode(array("Tiempo estimado" => $orden->tiempo)));
+        $response->getBody()->write(json_encode(array("Tiempo estimado" => "{$orden->tiempo} minutos")));
         return $response->withHeader('Content-Type', 'application/json');
     }
 

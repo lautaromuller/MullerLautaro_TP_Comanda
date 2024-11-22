@@ -52,7 +52,6 @@ class MesaController extends Mesa implements IApiUsable
 
             $response->getBody()->write(json_encode(array("mensaje" => "Mesa modificada con éxito")));
             return $response->withHeader('Content-Type', 'application/json');
-
         } else {
             $response->getBody()->write(json_encode(array("mensaje" => "No tiene permisos para esta operación")));
             return $response->withHeader('Content-Type', 'application/json');
@@ -62,9 +61,16 @@ class MesaController extends Mesa implements IApiUsable
     public function BorrarUno($request, $response, $args)
     {
         $codigo = $args['codigo_mesa'];
-        Mesa::borrarMesa($codigo);
+        $mesa = Mesa::obtenerMesa($codigo);
 
-        $payload = json_encode(array("mensaje" => "Mesa borrada con éxito"));
+        if (!$mesa) {
+            $payload = json_encode(array("error" => "La mesa no existe"));
+        } elseif ($mesa->estado == "disponible") {
+            Mesa::borrarMesa($codigo);
+            $payload = json_encode(array("mensaje" => "Mesa borrada con éxito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "Mesa en uso, no se puede borrar"));
+        }
 
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
@@ -89,6 +95,14 @@ class MesaController extends Mesa implements IApiUsable
         Mesa::descargarCSV();
 
         $response->getBody()->write(json_encode(array("mensaje" => "archivo cargado con éxito")));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function MesaMasUsada($request, $response, $args)
+    {
+        $mesa = Mesa::masUsada();
+
+        $response->getBody()->write(json_encode(array("mesa más usada" => $mesa)));
         return $response->withHeader('Content-Type', 'application/json');
     }
 }

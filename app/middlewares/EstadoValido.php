@@ -15,7 +15,7 @@ class EstadoValido
     {
         $params = $request->getParsedBody();
 
-        if ($params[$this->estado] == 'cerrada') {
+        if ($params[$this->estado] == 'cerrada' || $params[$this->estado] == 'con cliente esperando pedido' || $params[$this->estado] == 'con cliente comiendo' || $params[$this->estado] == 'con cliente pagando' || $params[$this->estado] == 'disponible') {
             return $handler->handle($request);
         }
 

@@ -99,7 +99,9 @@ class Producto
             $consultaExistente->bindValue(':nombre', $datos[0], PDO::PARAM_STR);
             $consultaExistente->execute();
             $resultado = $consultaExistente->fetchObject('Producto');
-            $cantActual = $resultado->cantidad;
+            if($resultado->cantidad){
+                $cantActual = $resultado->cantidad;
+            }
             if ($resultado) {
                 Producto::borrarProducto($resultado->id);
             }

@@ -49,10 +49,8 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
   $group->put('/{id}', \UsuarioController::class . ':ModificarUno')
     ->add(new ValidarCampos(array("nombre", "sector", "clave")));
 
-  $group->delete('/{id}', \UsuarioController::class . ':BorrarUno');
+  $group->delete('/{id}/{accion}', \UsuarioController::class . ':BorrarUno');
 })->add(new VerificarJWT());
-
-
 
 $app->group('/mesas', function (RouteCollectorProxy $group) {
   $group->post('[/]', [MesaController::class, 'CargarUno'])
@@ -65,11 +63,8 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
   $group->put('/{codigo_mesa}', [MesaController::class, 'ModificarUno'])
     ->add(new EstadoValido("estado"));
 
-  $group->delete('/{codigo_mesa}', [MesaController::class, 'BorrarUno'])
-    ->add(new MesaNoUsada());
+  $group->delete('/{codigo_mesa}', [MesaController::class, 'BorrarUno']);
 })->add(new VerificarJWT());
-
-
 
 $app->group('/productos', function (RouteCollectorProxy $group) {
   $group->post('[/]', [ProductoController::class, 'CargarUno'])
@@ -83,8 +78,6 @@ $app->group('/productos', function (RouteCollectorProxy $group) {
   $group->delete('/{id}', [ProductoController::class, 'BorrarUno']);
 })->add(new VerificarJWT());
 
-
-
 $app->group('/ordenes', function (RouteCollectorProxy $group) {
   $group->post('[/]', [OrdenController::class, 'CargarUno'])
     ->add(new MesaDisponible())
@@ -97,6 +90,11 @@ $app->group('/ordenes', function (RouteCollectorProxy $group) {
 
   $group->delete('/{codigo_pedido}', [OrdenController::class, 'BorrarUno']);
 })->add(new VerificarJWT());
+
+$app->group('/clientes', function (RouteCollectorProxy $group) {
+  $group->get('/{codigo_pedido}/{codigo_mesa}', [OrdenController::class, 'VerTiempoPedido']);
+  $group->post('[/]', [UsuarioController::class, 'CargarEncuesta']);
+});
 
 
 $app->post('/registro', \UsuarioController::class . ':RegistrarUsuario');
@@ -123,12 +121,16 @@ $app->group('/productos_csv', function (RouteCollectorProxy $group) {
   $group->get('[/]', [ProductoController::class, 'DescargarArchivo']);
 })->add(new VerificarJWT());
 
-$app->get('/pendientes', [OrdenController::class, 'TraerPendientes'])->add(new VerificarJWT());
 
-$app->group('/clientes', function (RouteCollectorProxy $group){
-  $group->get('/{codigo_pedido}/{codigo_mesa}', [OrdenController::class, 'VerTiempoPedido']);
-  $group->post('[/]', [UsuarioController::class, 'CargarEncuesta']);
-});
+
+$app->get('/pendientes', [OrdenController::class, 'TraerPendientes'])->add(new VerificarJWT());
+$app->get('/listos', [OrdenController::class, 'TraerListos'])->add(new VerificarJWT());
+$app->get('/precio_comanda/{codigo_pedido}/{codigo_mesa}', [OrdenController::class, 'PrecioComanda'])->add(new VerificarJWT());
+$app->get('/ver_comentarios', [UsuarioController::class, 'VerComentarios'])->add(new VerificarJWT());
+$app->get('/mesas_mas_usada', [MesaController::class, 'MesaMasUsada'])->add(new VerificarJWT());
+
+
+
 
 $app->get('[/]', [OrdenController::class, 'DescargarArchivoPDF']);
 

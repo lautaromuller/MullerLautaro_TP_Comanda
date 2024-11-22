@@ -12,6 +12,7 @@ class Orden
     public $estado_pedido;
     public $inicio_preparacion;
     public $tiempo;
+    public $precio_total;
 
 
     private static function consultarSector($nombre)
@@ -29,7 +30,16 @@ class Orden
         $consulta = $objAccesoDatos->prepararConsulta("SELECT tiempo FROM productos WHERE nombre = :nombre");
         $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
         $consulta->execute();
-        return $consulta->fetch();
+        return $consulta->fetch(PDO::FETCH_ASSOC)['tiempo'];
+    }
+
+    private static function consultarPrecio($nombre)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT precio FROM productos WHERE nombre = :nombre");
+        $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_ASSOC)['precio'];
     }
 
     public function crearOrden($productos)
@@ -38,7 +48,11 @@ class Orden
         $codigoPedido = substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 5);
 
         //Revisar stock
+        $precio_total = 0;
         foreach ($productos as $producto) {
+            if (!isset($producto['nombre'], $producto['cantidad'])) {
+                throw new Exception("El producto no tiene un nombre o cantidad válida.");
+            }
             $objAccesoDatos = AccesoDatos::obtenerInstancia();
             $consulta = $objAccesoDatos->prepararConsulta("SELECT cantidad FROM productos WHERE nombre = :nombre");
             $consulta->bindValue(':nombre', $producto['nombre'], PDO::PARAM_STR);
@@ -48,12 +62,14 @@ class Orden
             if (!$producto || $productoDB['cantidad'] <= $producto['cantidad']) {
                 throw new Exception("Stock insuficiente para el producto: " . $producto['nombre']);
             }
+
+            $precio_total += (self::consultarPrecio(ucfirst($producto['nombre'])) * $producto['cantidad']);
         }
 
         //Agregamos orden
         $consultaOrden = $objAccesoDatos->prepararConsulta(
-            "INSERT INTO ordenes (codigo_mesa, nombre_cliente, codigo_pedido, foto, estado_mesa, estado_pedido, inicio_preparacion, tiempo) 
-            VALUES (:codigo_mesa, :nombre_cliente, :codigo_pedido, :foto, :estado_mesa, :estado_pedido, :inicio_preparacion, 0)"
+            "INSERT INTO ordenes (codigo_mesa, nombre_cliente, codigo_pedido, foto, estado_mesa, estado_pedido, inicio_preparacion, tiempo, precio_total) 
+            VALUES (:codigo_mesa, :nombre_cliente, :codigo_pedido, :foto, :estado_mesa, :estado_pedido, :inicio_preparacion, 0, :precio_total)"
         );
         $consultaOrden->bindValue(':codigo_mesa', $this->codigo_mesa, PDO::PARAM_STR);
         $consultaOrden->bindValue(':nombre_cliente', ucfirst($this->nombre_cliente), PDO::PARAM_STR);
@@ -62,6 +78,7 @@ class Orden
         $consultaOrden->bindValue(':estado_mesa', "con cliente esperando pedido", PDO::PARAM_STR);
         $consultaOrden->bindValue(':estado_pedido', "pendiente", PDO::PARAM_STR);
         $consultaOrden->bindValue(':inicio_preparacion', 0, PDO::PARAM_STR);
+        $consultaOrden->bindValue(':precio_total', $precio_total, PDO::PARAM_INT);
         $consultaOrden->execute();
 
         //Actualizamos mesas
@@ -73,8 +90,12 @@ class Orden
 
         //Agregamos productos de la orden
         foreach ($productos as $producto) {
-            $sector = self::consultarSector($producto['nombre']);
-            $tiempo = self::consultarTiempo($producto['nombre']);
+            $sector = self::consultarSector(ucfirst($producto['nombre']));
+            $tiempo = self::consultarTiempo(ucfirst($producto['nombre']));
+
+            if ($sector === null || $tiempo === null) {
+                throw new Exception("No se encontró el sector o tiempo para el producto: " . $producto['nombre']);
+            }
 
             $consultaOrdenProducto = $objAccesoDatos->prepararConsulta(
                 "INSERT INTO productos_ordenes (codigo_pedido, nombre_producto, cantidad, sector, estado, tiempo) 
@@ -83,10 +104,9 @@ class Orden
             $consultaOrdenProducto->bindValue(':codigo_pedido', $codigoPedido, PDO::PARAM_STR);
             $consultaOrdenProducto->bindValue(':nombre_producto', ucfirst($producto['nombre']), PDO::PARAM_STR);
             $consultaOrdenProducto->bindValue(':cantidad', $producto['cantidad'], PDO::PARAM_INT);
-            $consultaOrdenProducto->bindValue(':sector', strtolower($sector), PDO::PARAM_STR);
+            $consultaOrdenProducto->bindValue(':sector', $sector, PDO::PARAM_STR);
             $consultaOrdenProducto->bindValue(':estado', "pendiente", PDO::PARAM_STR);
             $consultaOrdenProducto->bindValue(':tiempo', $tiempo, PDO::PARAM_INT);
-            $consultaOrdenProducto->execute();
 
             //Actualizamos productos
             $consultaActStock = $objAccesoDatos->prepararConsulta(
@@ -116,7 +136,7 @@ class Orden
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo_mesa, nombre_cliente, codigo_pedido, foto, estado_mesa, estado_pedido, inicio_preparacion, tiempo FROM ordenes");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo_mesa, nombre_cliente, codigo_pedido, foto, estado_mesa, estado_pedido, inicio_preparacion, tiempo, precio_total FROM ordenes");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Orden');
@@ -125,7 +145,7 @@ class Orden
     public static function obtenerOrden($codigo_pedido)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo_mesa, nombre_cliente, codigo_pedido, foto, estado_mesa, estado_pedido, inicio_preparacion, tiempo FROM ordenes WHERE codigo_pedido = :codigo_pedido");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo_mesa, nombre_cliente, codigo_pedido, foto, estado_mesa, estado_pedido, inicio_preparacion, tiempo, precio_total FROM ordenes WHERE codigo_pedido = :codigo_pedido");
         $consulta->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
         $consulta->execute();
 
@@ -135,7 +155,7 @@ class Orden
     public static function obtenerPendientes($codigo_pedido, $sector)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo_pedido, nombre_producto, cantidad, estado, tiempo FROM productos_ordenes WHERE codigo_pedido = :codigo_pedido AND sector = :sector AND estado = 'pendiente'");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT codigo_pedido, nombre_producto, cantidad, tiempo FROM productos_ordenes WHERE codigo_pedido = :codigo_pedido AND sector = :sector AND estado = 'pendiente'");
         $consulta->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
         $consulta->bindValue(':sector', $sector, PDO::PARAM_STR);
         $consulta->execute();
@@ -163,36 +183,57 @@ class Orden
         $consulta->bindValue(':sector', $sector, PDO::PARAM_STR);
         $consulta->execute();
 
+        $orden = Orden::obtenerOrden($codigo_pedido);
+
+        $mayor = 0;
+        if ($orden->estado_pedido != $estado_pedido && $estado_pedido == "en preparación") {
+            $consultaVerificar = $objAccesoDatos->prepararConsulta("SELECT tiempo FROM productos_ordenes WHERE codigo_pedido = :codigo_pedido");
+            $consultaVerificar->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
+            $consultaVerificar->execute();
+            $productos = $consultaVerificar->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($productos as $producto) {
+                $tiempo = $producto["tiempo"];
+                if ($tiempo > $mayor) {
+                    $mayor = $tiempo;
+                }
+            }
+
+            $usuarioActual = Usuario::ultimoUsuario();
+            $consulta = $objAccesoDatos->prepararConsulta("SELECT COUNT(*) AS contador FROM registro_usuario WHERE nombre = :nombre AND sector = :sector");
+            $consulta->bindValue(':nombre', $usuarioActual->nombre, PDO::PARAM_STR);
+            $consulta->bindValue(':sector', $usuarioActual->sector, PDO::PARAM_STR);
+            $consulta->execute();
+            $resultado = $consulta->fetch(PDO::FETCH_ASSOC);
+
+            if ($resultado['contador'] > 0) {
+                $consulta = $objAccesoDatos->prepararConsulta("UPDATE registro_operaciones SET operaciones = :operaciones WHERE nombre = :nombre AND sector = :sector");
+                $consulta->bindValue(':nombre', $usuarioActual->nombre, PDO::PARAM_STR);
+                $consulta->bindValue(':sector', $usuarioActual->sector, PDO::PARAM_STR);
+                $consulta->bindValue(':operaciones', ($usuarioActual->operaciones + 1), PDO::PARAM_STR);
+                $consulta->execute();
+            } else{
+                $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO registro_operaciones (sector, nombre, operaciones) VALUES (:sector, :nombre, 1)");
+                $consulta->bindValue(':nombre', $usuarioActual->nombre, PDO::PARAM_STR);
+                $consulta->bindValue(':sector', $usuarioActual->sector, PDO::PARAM_STR);
+                $consulta->execute();
+            }
+        }
+
         $consultaVerificar = $objAccesoDatos->prepararConsulta("SELECT estado FROM productos_ordenes WHERE codigo_pedido = :codigo_pedido");
         $consultaVerificar->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
         $consultaVerificar->execute();
         $productos = $consultaVerificar->fetchAll(PDO::FETCH_ASSOC);
 
-        $todosListos = true;
+        $todos_listos = true;
         foreach ($productos as $producto) {
-            if ($producto['estado'] != $estado_pedido) {
-                $todosListos = false;
+            if ($producto['estado'] != "listo para servir") {
+                $todos_listos = false;
                 break;
             }
         }
 
-        if ($todosListos) {
-            $mayor = 0;
-
-            if ($estado_pedido == "en preparación") {
-                $consultaVerificar = $objAccesoDatos->prepararConsulta("SELECT tiempo FROM productos_ordenes WHERE codigo_pedido = :codigo_pedido");
-                $consultaVerificar->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
-                $consultaVerificar->execute();
-                $productos = $consultaVerificar->fetchAll(PDO::FETCH_ASSOC);
-
-                foreach ($productos as $producto) {
-                    $tiempo = $producto["tiempo"];
-                    if ($tiempo > $mayor) {
-                        $mayor = $tiempo;
-                    }
-                }
-            }
-
+        if ($estado_pedido == "en preparación" || ($estado_pedido == "listo para servir" && $todos_listos)) {
             $consultaActualizarOrden = $objAccesoDatos->prepararConsulta("UPDATE ordenes SET estado_pedido = :estado_pedido, inicio_preparacion = :inicio_preparacion, tiempo = :tiempo WHERE codigo_pedido = :codigo_pedido");
             $horaInicio = (new DateTime())->format('H:i:s');
             $consultaActualizarOrden->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
@@ -319,5 +360,4 @@ class Orden
         fclose($archivo);
         return array("mensaje" => "Ordenes cargada con éxito");
     }
-
 }

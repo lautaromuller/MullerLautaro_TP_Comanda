@@ -45,7 +45,7 @@ class VerificarJWT
                 return;
             }
 
-            if (strpos($path, '/ordenes') != false) {
+            if (strpos($path, '/ordenes') != false || strpos($path, '/listos') != false || strpos($path, '/precio_comanda') != false) {
                 return;
             }
 
@@ -67,7 +67,7 @@ class VerificarJWT
                 return;
             }
 
-            if (strpos($path, '/pendientes') != false) {
+            if (strpos($path, '/pendientes') != false || strpos($path, '/listos') != false) {
                 return;
             }
 
@@ -86,6 +86,10 @@ class VerificarJWT
             }
 
             if(strpos($path, '/ordenes_csv') != false || strpos($path, '/mesas_csv') != false || strpos($path, '/usuarios_csv') != false || strpos($path, '/productos_csv') != false){
+                return;
+            }
+
+            if(strpos($path, '/listos') != false || strpos($path, '/ver_comentarios') != false || strpos($path, '/ver_mesas') != false ){
                 return;
             }
         }

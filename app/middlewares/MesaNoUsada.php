@@ -10,15 +10,17 @@ class MesaNoUsada
 
         $mesa = Mesa::obtenerMesa($codigo);
 
-        if (!$mesa || $mesa['codigo_mesa'] != "con cliente esperando pedido") {
+        if (!$mesa) {
             $response = new Response();
-            $response->getBody()->write(json_encode([
-                'error' => "La mesa está en uso"
-            ]));
-            return $response
-                ->withHeader('Content-Type', 'application/json');
+            $response->getBody()->write(json_encode(['error' => "La mesa no existe"]));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+        if ($mesa["estado"] == "disponible") {
+            return $handler->handle($request);
         }
 
-        return $handler->handle($request);
+        $response = new Response();
+        $response->getBody()->write(json_encode(['error' => "La mesa está en uso"]));
+        return $response->withHeader('Content-Type', 'application/json');
     }
 }
