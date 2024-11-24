@@ -1,0 +1,1828 @@
+{
+	"info": {
+		"_postman_id": "350b6b5e-b927-4c40-8223-d39b57f66a2a",
+		"name": "TP Comanda",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34078165"
+	},
+	"item": [
+		{
+			"name": "usuario",
+			"item": [
+				{
+					"name": "agregar usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "nombre",
+									"value": "Marcelo",
+									"type": "text"
+								},
+								{
+									"key": "tipo",
+									"value": "Mozo",
+									"type": "text"
+								},
+								{
+									"key": "clave",
+									"value": "22222",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/usuarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ver usuarios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/usuarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ver un usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/usuarios/:id_usuario",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"usuarios",
+								":id_usuario"
+							],
+							"variable": [
+								{
+									"key": "id_usuario",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "modificar usuario",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Lautaro\",\r\n    \"tipo\": \"bartender\",\r\n    \"clave\": \"contraseña\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/usuarios/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"usuarios",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Borrar usuario",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/usuarios/:id/:accion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"usuarios",
+								":id",
+								":accion"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "8"
+								},
+								{
+									"key": "accion",
+									"value": "suspendido"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "descargar usuarios",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/usuarios_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"usuarios_csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cargar usuarios",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archivo_csv",
+									"type": "file",
+									"src": "/C:/Users/USUARIO/Desktop/usuarios.txt"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/usuarios_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"usuarios_csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pendientes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/pendientes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"pendientes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "mesa",
+			"item": [
+				{
+					"name": "agregar mesa",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ver mesas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ver una mesa",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_mesa",
+									"value": "ABC12"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "modificar mesa",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"estado\": \"cerrada\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_mesa",
+									"value": "ABC12"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Borrar mesa",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_mesa",
+									"value": "ABC12"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "descargar mesas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas_csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cargar mesas",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archivo_csv",
+									"type": "file",
+									"src": "/C:/Users/USUARIO/Desktop/mesas.txt"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas_csv"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "producto",
+			"item": [
+				{
+					"name": "agregar producto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "nombre",
+									"value": "ravioles",
+									"type": "text"
+								},
+								{
+									"key": "precio",
+									"value": "300",
+									"type": "text"
+								},
+								{
+									"key": "sector",
+									"value": "cocina",
+									"type": "text"
+								},
+								{
+									"key": "cantidad",
+									"value": "40",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/productos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ver productos",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/productos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ver un producto",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/productos/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"productos",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "modificar producto",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"cerveza\",\r\n    \"precio\": 50,\r\n    \"sector\": \"cerveceria\",\r\n    \"cantidad\": 200\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/productos/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"productos",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "borrar producto",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/productos/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"productos",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "obtener productos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/productos_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"productos_csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "descargar productos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/productos_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"productos_csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cargar productos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archivo_csv",
+									"type": "file",
+									"src": "/C:/Users/USUARIO/Desktop/productos.txt"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/productos_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"productos_csv"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "orden",
+			"item": [
+				{
+					"name": "agregar orden",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "foto",
+									"type": "file",
+									"src": "/C:/Users/USUARIO/Desktop/clientes_foto.jpg"
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "ABC12",
+									"type": "text"
+								},
+								{
+									"key": "nombre_cliente",
+									"value": "Jose",
+									"type": "text"
+								},
+								{
+									"key": "productos",
+									"value": "[{\"nombre\": \"sopa\",\"cantidad\": 2},{\"nombre\": \"ravioles\",\"cantidad\": 2}]",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ver ordenes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ver orden",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes/:codigo_pedido/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes",
+								":codigo_pedido",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_pedido",
+									"value": "ZC379"
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "modificar_orden",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"estado_pedido\": \"en preparación\"\r\n    // \"nombre\" : \"Jose\",\r\n    // \"productos\": \r\n    // [\r\n    //     {\r\n    //         \"nombre\": \"sopa\",\r\n    //         \"cantidad\": 2\r\n    //     }\r\n    // ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes/:codigo_pedido",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes",
+								":codigo_pedido"
+							],
+							"variable": [
+								{
+									"key": "codigo_pedido",
+									"value": "ZC379"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "borrar orden",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes/:codigo_pedido",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes",
+								":codigo_pedido"
+							],
+							"variable": [
+								{
+									"key": "codigo_pedido",
+									"value": "6W2T5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "descarga ordenes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes_csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cargar ordenes",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archivo_csv",
+									"type": "file",
+									"src": "/C:/Users/USUARIO/Desktop/ordenes.txt"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes_csv",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes_csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "descargar pdf",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "registro",
+			"item": [
+				{
+					"name": "registrar usuario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "nombre",
+									"value": "Maria",
+									"type": "text"
+								},
+								{
+									"key": "sector",
+									"value": "Mozo",
+									"type": "text"
+								},
+								{
+									"key": "clave",
+									"value": "54545",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/registro",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"registro"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "obtener token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var response = pm.response.json();\r",
+									"\r",
+									"var token = response.mensaje;\r",
+									"\r",
+									"pm.collectionVariables.set(\"TOKEN\", token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "nombre",
+									"value": "Lautaro",
+									"type": "text"
+								},
+								{
+									"key": "clave",
+									"value": "contraseña",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "cliente",
+			"item": [
+				{
+					"name": "ver tiempo pedido",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "codigo_pedido",
+									"value": "ZC379",
+									"disabled": true
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/clientes/:codigo_pedido/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"clientes",
+								":codigo_pedido",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_pedido",
+									"value": "ZC379"
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cargar encuesta",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "puntaje_mesa",
+									"value": "8",
+									"type": "text"
+								},
+								{
+									"key": "puntaje_restaurante",
+									"value": "9",
+									"type": "text"
+								},
+								{
+									"key": "puntaje_mozo",
+									"value": "9",
+									"type": "text"
+								},
+								{
+									"key": "puntaje_cocinero",
+									"value": "8",
+									"type": "text"
+								},
+								{
+									"key": "mensaje",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23",
+									"type": "text"
+								},
+								{
+									"key": "codigo_pedido",
+									"value": "6F8AX",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/clientes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"clientes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Puntos aprobacion",
+			"item": [
+				{
+					"name": "1 - Cargar orden",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "foto",
+									"type": "file",
+									"src": "/C:/Users/USUARIO/Desktop/clientes_foto.jpg"
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23"
+								},
+								{
+									"key": "nombre_cliente",
+									"value": "Lucia"
+								},
+								{
+									"key": "productos",
+									"value": "[{\"nombre\":\"milanesa a caballo\",\"cantidad\":1},{\"nombre\":\"hamburguesa de garbanzo\",\"cantidad\":2},{\"nombre\":\"corona\",\"cantidad\":1},{\"nombre\":\"daikiri\",\"cantidad\":1}]"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3 - ver pendientes por sector",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/pendientes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"pendientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.2 - orden a \"en preparacion\"",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"estado_pedido\": \"en preparación\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes/:codigo_pedido",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes",
+								":codigo_pedido"
+							],
+							"variable": [
+								{
+									"key": "codigo_pedido",
+									"value": "VRBQH"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4 - ver tiempo pedido",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/clientes/:codigo_pedido/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"clientes",
+								":codigo_pedido",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_pedido",
+									"value": "VRBQH"
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5 - ver pedidos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6 - orden a \"listo para servir\"",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"estado_pedido\": \"listo para servir\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ordenes/:codigo_pedido",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ordenes",
+								":codigo_pedido"
+							],
+							"variable": [
+								{
+									"key": "codigo_pedido",
+									"value": "VRBQH"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7 - ver pedidos listos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/listos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"listos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7.2 - mesa a \"con cliente comiendo\"",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"estado\": \"con cliente comiendo\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8 - ver estado mesas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9 - Cobrar a cliente",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/precio_comanda/:codigo_pedido/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"precio_comanda",
+								":codigo_pedido",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_pedido",
+									"value": "VRBQH"
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "FFF23"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10 - socio cierra mesa",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/mesas/:codigo_mesa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"mesas",
+								":codigo_mesa"
+							],
+							"variable": [
+								{
+									"key": "codigo_mesa",
+									"value": "AY412"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11 - cargar encuesta",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "puntaje_mesa",
+									"value": "8",
+									"type": "text"
+								},
+								{
+									"key": "puntaje_restaurante",
+									"value": "9",
+									"type": "text"
+								},
+								{
+									"key": "puntaje_mozo",
+									"value": "7",
+									"type": "text"
+								},
+								{
+									"key": "puntaje_cocinero",
+									"value": "8",
+									"type": "text"
+								},
+								{
+									"key": "mensaje",
+									"value": "Muy rica la comida y muy buena la atencion, volveremos pronto!",
+									"type": "text"
+								},
+								{
+									"key": "codigo_mesa",
+									"value": "ABC12",
+									"type": "text"
+								},
+								{
+									"key": "codigo_pedido",
+									"value": "44444",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/clientes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"clientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "12 - ver mejores comentarios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost/TP-Comanda/app/ver_comentarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"TP-Comanda",
+								"app",
+								"ver_comentarios"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "inherit"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "TOKEN",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
