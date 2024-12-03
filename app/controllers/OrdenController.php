@@ -89,16 +89,22 @@ class OrdenController extends Orden implements IApiUsable
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public function PrecioComanda($request, $response, $args)
+    public function CobrarComanda($request, $response, $args)
     {
         $codigo_pedido = $args["codigo_pedido"];
         $codigo_mesa = $args["codigo_mesa"];
         $orden = Orden::obtenerOrden($codigo_pedido);
+        $mesa = Mesa::obtenerMesaRegistrada($codigo_pedido);
+
+        if ($mesa) {
+            $response->getBody()->write(json_encode(array("Mensaje" => "Ya se cobro la cuenta de esta comanda")));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
 
         Mesa::modificarMesa($codigo_mesa, "con cliente pagando");
         Mesa::registrarMesa($codigo_mesa, $codigo_pedido, $orden->precio_total);
 
-        $response->getBody()->write(json_encode(array("Mensaje" => "Estado de mesa modificado", "Precio total" => $orden->precio_total)));
+        $response->getBody()->write(json_encode(array("Mensaje" => "Mesa modificada", "Precio comanda" => $orden->precio_total)));
         return $response->withHeader('Content-Type', 'application/json');
     }
 
@@ -120,15 +126,22 @@ class OrdenController extends Orden implements IApiUsable
         $sector = $request->getAttribute('sector_usuario');
         $parametros = $request->getParsedBody();
 
-        if (strlen($codigo_pedido) == 5) {
+        $orden = Orden::obtenerOrden($codigo_pedido);
+
+        if ($orden) {
+
             if ($sector == 'mozo') {
                 $nombreCliente = $parametros['nombre'];
                 $productos = $parametros['productos'];
                 Orden::modificarDatosOrden($codigo_pedido, $nombreCliente, $productos);
-            } else if ($sector == 'cocina' || $sector == 'cerveceria' || $sector == 'bar') {
+            } 
+            else if ($sector == 'cocina' || $sector == 'cerveceria' || $sector == 'bar') {
+
                 $estado_pedido = strtolower($parametros['estado_pedido']);
+
                 if ($estado_pedido == "listo para servir" || $estado_pedido == "en preparación") {
                     Orden::modificarEstadoOrden($codigo_pedido, $sector, $estado_pedido);
+
                 } else {
                     $response->getBody()->write(json_encode(array("mensaje" => "Estado no válido")));
                     return $response->withHeader('Content-Type', 'application/json');
@@ -138,7 +151,7 @@ class OrdenController extends Orden implements IApiUsable
                 return $response->withHeader('Content-Type', 'application/json');
             }
         } else {
-            $response->getBody()->write(json_encode(array("error" => "El código de pedido no puede estar vacío")));
+            $response->getBody()->write(json_encode(array("error" => "Código de pedido no válido")));
             return $response->withHeader('Content-Type', 'application/json');
         }
 
@@ -183,21 +196,29 @@ class OrdenController extends Orden implements IApiUsable
         $codigo_pedido = $args['codigo_pedido'];
         $codigo_mesa = $args['codigo_mesa'];
 
-        $orden = Orden::verTiempoOrden($codigo_pedido, $codigo_mesa);
+        $orden = Orden::VerTiempoOrden($codigo_pedido, $codigo_mesa);
 
-        $horaInicio = new DateTime($orden->inicio_preparacion);
-        $horaActual = new DateTime();
-
-        $diferencia = $horaInicio->diff($horaActual);
-        $tiempo = ($diferencia->h * 60) + $diferencia->i;
-
-        if ($orden->tiempo > $tiempo) {
-            $orden->tiempo = $tiempo;
-        } else {
-            $orden->tiempo = 0;
+        if (!$orden) {
+            $response->getBody()->write(json_encode(["error" => "No se encontro uan mesa con ese código"]));
+            return $response->withHeader('Content-Type', 'application/json');
         }
 
-        $response->getBody()->write(json_encode(array("Tiempo estimado" => "{$orden->tiempo} minutos")));
+        $horaInicioStr = $orden->inicio_preparacion;
+        $horaActual = new DateTime();
+
+        $fechaActual = $horaActual->format('Y-m-d');
+        $horaInicio = DateTime::createFromFormat('Y-m-d H:i:s', "$fechaActual $horaInicioStr");
+
+        if ($horaInicio > $horaActual) {
+            $horaInicio->modify('-1 day');
+        }
+
+        $diferencia = $horaInicio->diff($horaActual);
+        $tiempoTranscurrido = ($diferencia->h * 60) + $diferencia->i;
+
+        $tiempoRestante = max(0, $orden->tiempo - $tiempoTranscurrido);
+
+        $response->getBody()->write(json_encode(["Tiempo estimado restante" => "$tiempoRestante minutos"]));
         return $response->withHeader('Content-Type', 'application/json');
     }
 

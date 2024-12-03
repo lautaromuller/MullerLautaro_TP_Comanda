@@ -111,9 +111,6 @@ class Mesa
         return array("mensaje" => "Mesas cargadas con éxito");
     }
 
-
-
-
     public static function registrarMesa($codigo_mesa, $codigo_pedido, $importe){
         $db = AccesoDatos::obtenerInstancia();
         $consulta = $db->prepararConsulta("INSERT INTO registro_mesas (codigo_mesa, codigo_pedido, importe, fecha) VALUES (:codigo_mesa, :codigo_pedido, :importe, :fecha)");
@@ -125,22 +122,68 @@ class Mesa
         $consulta->execute();
 
 
-        $consulta = $db->prepararConsulta("SELECT facturacion FROM mesas WHERE ncodigo_mesa = :codigo_mesa");
-        $consulta->bindValue(':codigo_mesa', $codigo_mesa, PDO::PARAM_STR);
-        $consulta->execute();
-        $facturacion = $consulta->fetch(PDO::FETCH_ASSOC)['facturacion'];
-
-        $consultaMesas = $db->prepararConsulta("UPDATE mesas SET facturacion = :facturacion WHERE codigo_mesa = :codigo_mesa");
-        $consultaMesas->bindValue(':facturacion', $facturacion + $importe, PDO::PARAM_STR);
+        $consultaMesas = $db->prepararConsulta("UPDATE mesas SET facturacion = facturacion + :importe WHERE codigo_mesa = :codigo_mesa");
+        $consultaMesas->bindValue(':importe', $importe, PDO::PARAM_STR);
         $consultaMesas->bindValue(':codigo_mesa', $codigo_mesa, PDO::PARAM_STR);
         $consultaMesas->execute();
 
     }
 
-    public static function masUsada()
+    public static function obtenerMesaRegistrada($codigo_pedido)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM registro_mesas WHERE codigo_pedido = :codigo_pedido");
+        $consulta->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_OBJ);
+    }
+
+
+    //consulta
+    public static function verMasUsada()
     {
         $db = AccesoDatos::obtenerInstancia();
-        $consulta = $db->prepararConsulta("SELECT codigo_mesa, COUNT(*) AS usos FROM registro_mesas GROUP BY codigo_mesa ORDER BY usos DESC LIMIT 1;");
+        $consulta = $db->prepararConsulta("SELECT codigo_mesa, usos FROM mesas ORDER BY usos DESC LIMIT 1;");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }    
+
+    public static function verMenosUsada()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT codigo_mesa, usos FROM mesas ORDER BY usos ASC LIMIT 1;");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function verMayorFacturacion()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT codigo_mesa, facturacion FROM mesas ORDER BY facturacion DESC LIMIT 1;");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function verMenorFacturacion()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT codigo_mesa, facturacion FROM mesas ORDER BY facturacion ASC LIMIT 1;");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function verMayorImporte()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT codigo_mesa, importe, fecha FROM registro_mesas ORDER BY importe DESC LIMIT 1;");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function verMenorImporte()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT codigo_mesa, importe, fecha FROM registro_mesas ORDER BY importe ASC LIMIT 1;");
         $consulta->execute();
         return $consulta->fetch(PDO::FETCH_ASSOC);
     }

@@ -89,13 +89,40 @@ class ProductoController extends Producto implements IApiUsable
 
         return "Falta archivo CSV.";
     }
-    
 
     public function DescargarArchivo($request, $response, $args)
     {
         Producto::descargarCSV();
 
         $response->getBody()->write(json_encode(array("mensaje" => "archivo descargado con éxito")));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+
+
+    //consultas
+    public function MasVendido($request, $response, $args)
+    {
+        $producto = Producto::verMasVendido();
+
+        $response->getBody()->write(json_encode(array("producto más vendido" => $producto)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function MenosVendido($request, $response, $args)
+    {
+        $producto = Producto::verMenosVendido();
+
+        $response->getBody()->write(json_encode(array("producto menos vendido" => $producto)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function Cancelados($request, $response, $args)
+    {
+        $lista = Producto::productosCancelados();
+        $payload = ["cancelados" => $lista];
+
+        $response->getBody()->write(json_encode($payload));
         return $response->withHeader('Content-Type', 'application/json');
     }
 }

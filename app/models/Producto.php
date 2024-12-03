@@ -122,4 +122,30 @@ class Producto
         fclose($archivo);
         return array("mensaje" => "Productos cargados con éxito");
     }
+
+
+    //consultas
+    public static function verMasVendido()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT nombre,sector,vendidos FROM productos ORDER BY vendidos DESC LIMIT 1");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_OBJ);
+    }
+
+    public static function verMenosVendido()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT nombre, sector, vendidos FROM productos ORDER BY vendidos ASC LIMIT 1");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_OBJ);
+    }
+
+    public static function productosCancelados()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT nombre, sector, cancelados FROM productos WHERE cancelados > 0");
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

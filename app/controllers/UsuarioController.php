@@ -9,6 +9,11 @@ class UsuarioController extends Usuario implements IApiUsable
   {
     $parametros = $request->getParsedBody();
 
+    if ($parametros['sector'] !== "bar" && $parametros['sector'] !== "cocina" && $parametros['sector'] !== "socio" && $parametros['sector'] !== "mozo") {
+      $response->getBody()->write(json_encode(array("mensaje" => "Sector no válido")));
+      return $response->withHeader('Content-Type', 'application/json');
+    }
+
     $usuario = new Usuario();
     $usuario->nombre = $parametros['nombre'];
     $usuario->sector = $parametros['sector'];
@@ -55,13 +60,13 @@ class UsuarioController extends Usuario implements IApiUsable
   {
     $usuarioId = $args['id'];
     $accion = $args['accion'];
-    if($accion == "suspendido"){
+    if ($accion == "suspendido") {
       Usuario::borrarUsuario($usuarioId, $accion);
       $response->getBody()->write(json_encode(array("mensaje" => "Usuario suspendido")));
-    } else if($accion == "dado de baja"){
+    } else if ($accion == "dado de baja") {
       Usuario::borrarUsuario($usuarioId, $accion);
       $response->getBody()->write(json_encode(array("mensaje" => "Usuario dado de baja")));
-    } else{
+    } else {
       $response->getBody()->write(json_encode(array("mensaje" => "No se pudo borrar el usuario. Acción no válida")));
     }
 
@@ -147,27 +152,70 @@ class UsuarioController extends Usuario implements IApiUsable
     }
 
     $orden = Orden::obtenerOrden($c_pedido);
-    if (isset($orden) && $p_mesa && $p_restaurante && $p_mozo && $p_cocinero) {
-      if(!Usuario::existeEncuesta($c_pedido)){
-        Usuario::subirEncuesta($p_mesa, $p_restaurante, $p_mozo, $p_cocinero, $mensaje, $c_mesa, $c_pedido);
-        $response->getBody()->write(json_encode("Encuesta subida con éxito"));
-      }
-      else{
-        $response->getBody()->write(json_encode("La encuesta ya fue subida"));
-      }
-    } else {
-      $response->getBody()->write(json_encode("Faltan datos en la encuesta"));
+    if (!$orden) {
+      $response->getBody()->write(json_encode("El código de orden es incorrecto"));
+      return $response->withHeader('Content-Type', 'application/json');
     }
+    if (!$p_mesa || !$p_restaurante || !$p_mozo || !$p_cocinero) {
+      $response->getBody()->write(json_encode("Faltan datos en la encuesta"));
+      return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    if (!Usuario::existeEncuesta($c_pedido)) {
+      Usuario::subirEncuesta($p_mesa, $p_restaurante, $p_mozo, $p_cocinero, $mensaje, $c_mesa, $c_pedido);
+      $response->getBody()->write(json_encode("Encuesta subida con éxito"));
+    } else {
+      $response->getBody()->write(json_encode("Ya se hizo la encuesta"));
+    }
+
     return $response->withHeader('Content-Type', 'application/json');
   }
 
-  public function VerComentarios($request, $response, $args)
+  public function MejoresComentarios($request, $response, $args)
   {
-    $lista = Usuario::mejoresComentarios();
+    $lista = Usuario::verMejoresComentarios();
 
     $response->getBody()->write(json_encode(array("mejores comentarios" => $lista)));
     return $response->withHeader('Content-Type', 'application/json');
   }
 
-  
+  public function PeoresComentarios($request, $response, $args)
+  {
+    $lista = Usuario::verPeoresComentarios();
+
+    $response->getBody()->write(json_encode(array("peores comentarios" => $lista)));
+    return $response->withHeader('Content-Type', 'application/json');
+  }
+
+
+
+  //Consultas
+  public function OperacionesPorSector($request, $response, $args)
+  {
+    $lista = Usuario::verOperacionesPorSector();
+    $payload = ["operaciones por sector" => $lista];
+
+    $response->getBody()->write(json_encode($payload));
+    return $response->withHeader('Content-Type', 'application/json');
+  }
+
+  public function OperacionesPorUsuarios($request, $response, $args)
+  {
+    $lista = Usuario::verOperacionesPorUsuarios();
+    $payload = ["operaciones por usuarios" => $lista];
+
+    $response->getBody()->write(json_encode($payload));
+    return $response->withHeader('Content-Type', 'application/json');
+  }
+
+  public function DarDeAlta($request, $response, $args)
+  {
+    $parametros = $request->getParsedBody();
+    $id = $parametros['id'];
+    Usuario::devolverAlta($id);
+    
+    $response->getBody()->write(json_encode(array("mensaje" => "Usuario dado de alta")));
+    return $response->withHeader('Content-Type', 'application/json');
+  }
+
 }

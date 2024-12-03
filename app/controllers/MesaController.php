@@ -98,11 +98,53 @@ class MesaController extends Mesa implements IApiUsable
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public function MesaMasUsada($request, $response, $args)
+
+    //consultas
+    public function MasUsada($request, $response, $args)
     {
-        $mesa = Mesa::masUsada();
+        $mesa = Mesa::verMasUsada();
 
         $response->getBody()->write(json_encode(array("mesa más usada" => $mesa)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function MenosUsada($request, $response, $args)
+    {
+        $mesa = Mesa::verMenosUsada();
+
+        $response->getBody()->write(json_encode(array("mesa menos usada" => $mesa)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function MasFacturacion($request, $response, $args)
+    {
+        $mesa = Mesa::verMayorFacturacion();
+
+        $response->getBody()->write(json_encode(array("mesa que mas facturo" => $mesa)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function MenosFacturacion($request, $response, $args)
+    {
+        $mesa = Mesa::verMenorFacturacion();
+
+        $response->getBody()->write(json_encode(array("mesa que menos facturo" => $mesa)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function MayorImporte($request, $response, $args)
+    {
+        $mesa = Mesa::verMayorImporte();
+
+        $response->getBody()->write(json_encode(array("mayor importe" => $mesa)));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function MenorImporte($request, $response, $args)
+    {
+        $mesa = Mesa::verMenorImporte();
+
+        $response->getBody()->write(json_encode(array("menor importe" => $mesa)));
         return $response->withHeader('Content-Type', 'application/json');
     }
 }

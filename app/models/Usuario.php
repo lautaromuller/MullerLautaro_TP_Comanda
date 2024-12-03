@@ -29,14 +29,6 @@ class Usuario
         $consulta->bindValue(':clave', $claveHash);
         $consulta->execute();
 
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO registro_usuario (dia, horario, nombre, sector) VALUES (:dia, :horario, :nombre, :sector)");
-        $fecha = new DateTime();
-        $consulta->bindValue(':dia', date_format($fecha, 'Y-m-d'));
-        $consulta->bindValue(':horario', date_format($fecha, 'H:i:s'));
-        $consulta->bindValue(':nombre', ucfirst($this->nombre), PDO::PARAM_STR);
-        $consulta->bindValue(':sector', strtolower($this->sector), PDO::PARAM_STR);
-        $consulta->execute();
-
         return $objAccesoDatos->obtenerUltimoId();
     }
 
@@ -90,6 +82,14 @@ class Usuario
         $consulta->execute();
 
         $usuario = $consulta->fetch(PDO::FETCH_OBJ);
+
+        $consulta = $db->prepararConsulta("INSERT INTO registro_usuario (dia, horario, nombre, sector) VALUES (:dia, :horario, :nombre, :sector)");
+        $fecha = new DateTime();
+        $consulta->bindValue(':dia', date_format($fecha, 'Y-m-d'));
+        $consulta->bindValue(':horario', date_format($fecha, 'H:i:s'));
+        $consulta->bindValue(':nombre', ucfirst($nombre), PDO::PARAM_STR);
+        $consulta->bindValue(':sector', strtolower($usuario->sector), PDO::PARAM_STR);
+        $consulta->execute();
 
         if ($usuario && password_verify($clave, $usuario->clave)) {
             return [
@@ -160,8 +160,8 @@ class Usuario
     {
         $db = AccesoDatos::obtenerInstancia();
         $consulta = $db->prepararConsulta(
-            "INSERT INTO encuesta (mesa, restaurante, mozo, cocinero, mensaje, fecha, codigo_mesa, codigo_pedido, puntaje) 
-            VALUES (:mesa, :restaurante, :mozo, :cocinero, :mensaje, :fecha, :codigo_mesa, :codigo_pedido, :puntaje)"
+            "INSERT INTO encuesta (mesa, restaurante, mozo, cocinero, mensaje, puntaje, fecha, codigo_mesa, codigo_pedido) 
+            VALUES (:mesa, :restaurante, :mozo, :cocinero, :mensaje, :puntaje, :fecha, :codigo_mesa, :codigo_pedido)"
         );
         $fecha = new DateTime();
         $consulta->bindValue(':mesa', $mesa, PDO::PARAM_INT);
@@ -169,16 +169,16 @@ class Usuario
         $consulta->bindValue(':mozo', $mozo, PDO::PARAM_INT);
         $consulta->bindValue(':cocinero', $cocinero, PDO::PARAM_INT);
         $consulta->bindValue(':mensaje', $mensaje, PDO::PARAM_STR);
-        $consulta->bindValue(':fecha', date_format($fecha, 'Y-m-d'), PDO::PARAM_STR);
+        $consulta->bindValue(':puntaje', round((($mesa + $restaurante + $mozo + $cocinero) / 4)), PDO::PARAM_INT);
+        $consulta->bindValue(':fecha', date_format($fecha, 'Y-m-d'));
         $consulta->bindValue(':codigo_mesa', $c_mesa, PDO::PARAM_STR);
         $consulta->bindValue(':codigo_pedido', $c_pedido, PDO::PARAM_STR);
-        $consulta->bindValue(':puntaje', round((($mesa + $restaurante + $mozo + $cocinero) / 4)), PDO::PARAM_INT);
         $consulta->execute();
 
         $consulta = $db->prepararConsulta("UPDATE registro_mesas SET puntaje = :puntaje WHERE codigo_mesa = :c_mesa AND codigo_pedido = :c_pedido");
         $consulta->bindValue(':puntaje', round((($mesa + $restaurante + $mozo + $cocinero) / 4)), PDO::PARAM_INT);
-        $consulta->bindValue(':codigo_mesa', $c_mesa, PDO::PARAM_STR);
-        $consulta->bindValue(':codigo_pedido', $c_pedido, PDO::PARAM_STR);
+        $consulta->bindValue(':c_mesa', $c_mesa, PDO::PARAM_STR);
+        $consulta->bindValue(':c_pedido', $c_pedido, PDO::PARAM_STR);
         $consulta->execute();
     }
 
@@ -196,10 +196,10 @@ class Usuario
         return false;
     }
 
-    public static function mejoresComentarios()
+    public static function verMejoresComentarios()
     {
         $db = AccesoDatos::obtenerInstancia();
-        $consulta = $db->prepararConsulta("SELECT * FROM encuesta ORDER BY puntaje DESC LIMIT 10");
+        $consulta = $db->prepararConsulta("SELECT * FROM encuesta ORDER BY puntaje DESC LIMIT 5");
         $consulta->execute();
         return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -207,8 +207,49 @@ class Usuario
     public static function ultimoUsuario()
     {
         $db = AccesoDatos::obtenerInstancia();
-        $consulta = $db->prepararConsulta("SELECT * FROM regitro_usuario ORDER BY dia DESC, horario DESC LIMIT 1");
+        $consulta = $db->prepararConsulta("SELECT * FROM registro_usuario ORDER BY dia DESC, horario DESC LIMIT 1");
         $consulta->execute();
-        return $consulta->fetchObject('Usuario');
+        return $consulta->fetch(PDO::FETCH_OBJ);
+    }
+
+
+
+
+    public static function verPeoresComentarios()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT * FROM encuesta ORDER BY puntaje ASC LIMIT 5");
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    //Consultas
+    public static function verOperacionesPorSector()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta(
+            "SELECT sector, SUM(operaciones) AS total_operaciones
+            FROM registro_operaciones GROUP BY sector;");
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function verOperacionesPorUsuarios()
+    {
+        $db = AccesoDatos::obtenerInstancia();
+        $consulta = $db->prepararConsulta("SELECT nombre, operaciones FROM registro_operaciones");
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function devolverAlta($id)
+    {
+        $objAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET fecha_baja = :fecha_baja, estado = :estado WHERE id = :id");
+        $consulta->bindValue(':fecha_baja', null, PDO::PARAM_STR);
+        $consulta->bindValue(':estado', 'activo');
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->execute();
     }
 }

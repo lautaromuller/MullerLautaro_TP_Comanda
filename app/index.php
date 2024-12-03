@@ -125,10 +125,33 @@ $app->group('/productos_csv', function (RouteCollectorProxy $group) {
 
 $app->get('/pendientes', [OrdenController::class, 'TraerPendientes'])->add(new VerificarJWT());
 $app->get('/listos', [OrdenController::class, 'TraerListos'])->add(new VerificarJWT());
-$app->get('/precio_comanda/{codigo_pedido}/{codigo_mesa}', [OrdenController::class, 'PrecioComanda'])->add(new VerificarJWT());
-$app->get('/ver_comentarios', [UsuarioController::class, 'VerComentarios'])->add(new VerificarJWT());
-$app->get('/mesas_mas_usada', [MesaController::class, 'MesaMasUsada'])->add(new VerificarJWT());
+$app->get('/cobrar_comanda/{codigo_pedido}/{codigo_mesa}', [OrdenController::class, 'CobrarComanda'])->add(new VerificarJWT());
+$app->get('/mejores_comentarios', [UsuarioController::class, 'MejoresComentarios'])->add(new VerificarJWT());
 
+
+
+
+$app->get('/peores_comentarios', [UsuarioController::class, 'PeoresComentarios']);
+
+$app->group('/consultar', function (RouteCollectorProxy $group) {
+  $group->get('/empleados/operaciones_sector', [UsuarioController::class, 'OperacionesPorSector']);
+  $group->get('/empleados/operaciones_usuarios', [UsuarioController::class, 'OperacionesPorUsuarios']);
+
+
+  $group->get('/pedidos/mas_vendido', [ProductoController::class, 'MasVendido']);
+  $group->get('/pedidos/menos_vendido', [ProductoController::class, 'MenosVendido']);
+  $group->get('/pedidos/cancelados', [ProductoController::class, 'Cancelados']);
+
+
+  $group->get('/mesas/mas_usada', [MesaController::class, 'MasUsada']);
+  $group->get('/mesas/menos_usada', [MesaController::class, 'MenosUsada']);
+  $group->get('/mesas/mas_facturacion', [MesaController::class, 'MasFacturacion']);
+  $group->get('/mesas/menos_facturacion', [MesaController::class, 'MenosFacturacion']);
+  $group->get('/mesas/mayor_importe', [MesaController::class, 'MayorImporte']);
+  $group->get('/mesas/menor_importe', [MesaController::class, 'MenorImporte']);
+});
+
+$app->post('/usuarios/alta_usuario', [UsuarioController::class, 'DarDeAlta']);
 
 
 
